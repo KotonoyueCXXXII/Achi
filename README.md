@@ -30,12 +30,12 @@ Achi_func_new/
 ├── 01_init/                    ← 初始化函数（2 个）
 ├── 02_events/                  ← 系统事件监听（6 个）
 ├── 03_functions/               ← 自定义函数（28 个）
-│   ├── worldData/              ←  ExtraData 存取层
+│   ├── main.hpl                ←  主循环入口
+│   ├── entry/                  ←  入口函数（导航/反馈/错误）
 │   ├── queue/                  ←  FIFO 队列
-│   ├── process/                ←  异步处理器（备份/初始化状态机）
-│   ├── form/                   ←  表单辅助
-│   ├── check/                  ←  区块加载检测
-│   └── get/                    ←  空闲地皮查找
+│   ├── land/                   ←  领地操作（初始化/备份/克隆）
+│   ├── ui/                     ←  表单辅助
+│   └── data/                   ←  ExtraData 存取层
 ├── 04_forms/                   ← UI 表单定义（26 个）
 │   └── ACHI/
 │       ├── HOME/               ←  主菜单
