@@ -1,0 +1,23 @@
+﻿rawCmd = {func, maps.get(args, 'command')}
+
+if {func, maps.exist(args, 'entityId')}:
+  if {func, strings.startswith(rawCmd, '/')}:
+    entityId = {func, maps.get(args, 'entityId')}
+    _ = {func, command.set_executor(entityId)}
+    _ = {func, maps.set(args, 'cancel', True)}
+    playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', entityId)}
+
+    if playerData != -2147483648:
+      if {func, maps.get(playerData, 'privilegeLevel')} > 2:
+        _ = {func, maps.set(args, 'cancel', False)}
+      else:
+        _ = {func, function.call('entry/feedback', '权限不足，仅管理员可使用命令\\n' + rawCmd)}
+      fi
+      _ = {func, object.finalise(playerData)}
+
+    else:
+      _ = {func, function.call('entry/feedback', '请先注册后再使用命令')}
+    fi
+  fi
+fi
+return True

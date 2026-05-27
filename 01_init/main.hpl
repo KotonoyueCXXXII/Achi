@@ -1,0 +1,29 @@
+// 服务器空载启动时初始化所有 ExtraData 域
+worldId = {func, object.deref({func, world.GetLevelId()})}
+
+// 定义需要初始化的域列表并遍历创建
+domains = {func, slices.new('temp.player.index', 'temp.land.using', 'data.player.archive', 'data.land.archive', 'data.main')}
+len = {func, slices.length(domains)}
+
+for i, len:
+  domain = {func, slices.get(domains, i)}
+  existPtr = {func, entity.GetExtraData(worldId, domain)}
+
+  if {func, object.ref_type(existPtr)} != 6:
+    _ = {func, entity.SetExtraData(worldId, domain, {func, maps.new(False)}, True, False)}
+  fi
+
+rof
+
+// 设置 data.main 默认值
+mainPtr = {func, entity.GetExtraData(worldId, 'data.main')}
+
+if not {func, maps.exist(mainPtr, 'nextUID')}:
+  _ = {func, maps.set(mainPtr, 'nextUID', 0)}
+fi
+
+if not {func, maps.exist(mainPtr, 'schedule')}:
+  _ = {func, maps.set(mainPtr, 'schedule', 0)}
+fi
+
+return True

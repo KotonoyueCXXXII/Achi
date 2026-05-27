@@ -1,0 +1,22 @@
+﻿uid = {func, tuple.get(args, 0)} + 1
+cut = int({func, math.ceil({func, math.sqrt(uid)})} - 1)
+lan = int(uid  - {func, math.pow(cut, 2)} - 1)
+col = 0
+row = cut
+
+if lan > cut:
+  row = row - (lan - cut)
+  col = cut
+else:
+  col = lan
+fi
+
+if {func, math.mod(cut, 2)} == 0:
+  col = col + row
+  row = col - row
+  col = col - row
+fi
+
+result = {func, tuple.new(col, row)}
+_ = {func, object.pin(result)}
+return result

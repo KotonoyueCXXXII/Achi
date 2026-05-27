@@ -1,0 +1,40 @@
+﻿//地皮初始化状态机：处理 queue.land.init 队列槽位 0
+//每 5 tick 调用一次，等待区块加载后执行 initLand
+taskData = {func, function.call('queue/peek', 'queue.land.init')}
+
+if taskData == -2147483648:
+  return True
+fi
+
+_ = {func, object.finalise(taskData)}
+
+//读取任务数据
+sizeIndex = {func, maps.get(taskData, 'sizeIndex')}
+playerId = {func, maps.get(taskData, 'playerId')}
+anchor_x = {func, maps.get(taskData, 'anchor_x')}
+anchor_y = {func, maps.get(taskData, 'anchor_y')}
+anchor_z = {func, maps.get(taskData, 'anchor_z')}
+retryCount = {func, maps.get(taskData, 'retryCount')}
+
+//递减并检查超时
+_ = {func, maps.set(taskData, 'retryCount', retryCount - 1)}
+
+if retryCount == 0:
+  _ = {func, function.call('queue/pop', 'queue.land.init')}
+  return True
+fi
+
+//当前队列信息
+debug = '当前任务_尺寸序列=' + str(sizeIndex) + '_等待tick=' + str(retryCount * 5)
+_ = {func, function.call('entry/debug', debug)}
+
+//区块加载完成后执行地皮初始化
+
+if {func, function.call('land/checkChunks', anchor_x, anchor_z, sizeIndex)}:
+  _ = {func, function.call('land/initLand', anchor_x, anchor_y, anchor_z, sizeIndex)}
+  _ = {func, function.call('queue/pop', 'queue.land.init')}
+  debug = '任务处理完毕_队列已刷新'
+  _ = {func, function.call('entry/debug', debug)}
+fi
+
+return True

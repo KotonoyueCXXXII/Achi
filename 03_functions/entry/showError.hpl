@@ -1,0 +1,4 @@
+﻿code = {func, tuple.get(args, 0)}
+_ = {func, function.call('data/mapSet', 'temp.menu.errorCode', 'code', code)}
+_ = {func, function.call('entry/navigate', 'ACHI_INFO_ERROR')}
+return True

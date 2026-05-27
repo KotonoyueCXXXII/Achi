@@ -1,0 +1,30 @@
+﻿//主循环：每 tick 驱动备份/初始化队列、菜单、数据持久化
+playerId = {func, command.get_executor()}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+schedule = {func, function.call('data/mapGet', 'data.main', 'schedule')}
+
+if schedule == -2147483648:
+  schedule = 0
+fi
+
+//每 tick：显示地皮设置提示，触发菜单检测
+cmd = 'titleraw @a[tag=isSettingLand] actionbar {\"rawtext\":[{\"text\":\"获取地皮位置：西北角（最小 x 和最小 z）的方块坐标\\n请在目标位置点击地面\\n系统将尝试获取地基高度信息\\n请保证点击位置在地基上面一格\"}]}'
+_ = {func, world.SetCommand(cmd, playerId)}
+cmd = 'execute as @a[rx=-88] at @s run customfunction call @s ~ ~ ~ \"ui/openMenu\"'
+_ = {func, world.SetCommand(cmd, playerId)}
+
+//每 5 tick：驱动备份与地皮初始化队列
+if {func, math.mod(schedule, 5)} == 0:
+  _ = {func, function.call('land/processBackup')}
+  _ = {func, function.call('land/processInit')}
+fi
+
+//每 600 tick（~30 秒）：持久化存档，刷新表单样式
+if {func, math.mod(schedule, 600)} == 0:
+  _ = {func, entity.SaveExtraData(worldId)}
+  cmd = 'customform style @a speed_00'
+  _ = {func, world.SetCommand(cmd, playerId)}
+fi
+
+_ = {func, function.call('data/mapSet', 'data.main', 'schedule', schedule + 1)}
+return True

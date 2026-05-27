@@ -1,0 +1,7 @@
+//反馈入口：向执行玩家发送 tellraw 消息
+message = {func, tuple.get(args, 0)}
+playerId = {func, command.get_executor()}
+
+cmd = 'tellraw @s {\"rawtext\":[{\"text\":\"§7系统 | ACHI > §f' + message + '\"}]}'
+_ = {func, world.SetCommand(cmd, playerId)}
+return True

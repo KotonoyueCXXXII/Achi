@@ -1,0 +1,104 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '获取地皮'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '回到地皮'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '查看备份'"
+editlongform &(formName) append divider
+editlongform &(formName) append button
+editbutton &(formName) 4 text "return '创建地皮'"
+editlongform &(formName) append button
+editbutton &(formName) 5 text "return '删除地皮'"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文及账户数据
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+//由于使用此表单的条件是创建账户，故不进行返回值检查
+_ = {func, object.finalise(playerData)}
+privilege = {func, maps.get(playerData, 'privilegeLevel')}
+playerUID = {func, maps.get(playerData, 'uid')}
+
+// 获取地皮
+
+if {ref, bool, 0}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_LAND_GET')}
+// 回到地皮
+elif {ref, bool, 1}:
+  usingLandIndex = {func, function.call('data/mapGet', 'temp.land.using', playerIndex)}
+
+  if usingLandIndex != -2147483648:
+    landData = {func, function.call('data/ptrMapGet', 'data.land.archive', usingLandIndex)}
+    //由于规则设定using中的地皮索引均为有效地皮，故不检查
+    _ = {func, object.finalise(landData)}
+    landAnchorPos_x = {func, maps.get(landData, 'anchor_x')}
+    landAnchorPos_y = {func, maps.get(landData, 'anchor_y')}
+    landAnchorPos_z = {func, maps.get(landData, 'anchor_z')}
+    _ = {func, entity.SetPos(playerId, {func, tuple.new(landAnchorPos_x, landAnchorPos_y, landAnchorPos_z)})}
+    _ = {func, function.call('entry/feedback', '已传送至你的地皮')}
+  else:
+    _ = {func, function.call('entry/showError', 11)}
+  fi
+
+// 查看备份
+elif {ref, bool, 2}:
+  posPtr = {func, function.call('land/squareSpiralFill', playerUID)}
+  _ = {func, object.finalise(posPtr)}
+  col = {func, tuple.get(posPtr, 0)}
+  row = {func, tuple.get(posPtr, 1)}
+  backup_x = 1048576 + col * 40
+  backup_z = 1048576 + row * 40
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(backup_x, -32, backup_z)})}
+  _ = {func, function.call('entry/feedback', '已传送至备份区中您的地皮的存储位置西北角')}
+
+// 创建地皮
+elif {ref, bool, 3}:
+
+  if privilege == 3:
+    _ = {func, function.call('entry/navigate', 'ACHI_HOME_LAND_SET')}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+  
+
+// 删除地皮
+elif {ref, bool, 4}:
+
+  if privilege == 3:
+    //获取玩家坐标
+    posPtr = {func, entity.GetFootPos(playerId)}
+    pos_x = int({func, tuple.get(posPtr, 0)})
+    pos_z = int({func, tuple.get(posPtr, 2)})
+    worldId = {func, object.deref({func, world.GetLevelId()})}
+    archivePtr = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+    totalLand = {func, maps.length(archivePtr)}
+
+    for landIndex, totalLand:
+      landInfo = {func, maps.ptr_get(archivePtr, {func, object.ref(landIndex)})}
+      anchor_x = {func, maps.get(landInfo, 'anchor_x')}
+      anchor_z = {func, maps.get(landInfo, 'anchor_z')}
+      sizeIndex = {func, maps.get(landInfo, 'sizeIndex')}
+      landSize = 20 + sizeIndex * 10 - 1
+
+      if pos_x >= anchor_x and pos_x <= anchor_x + landSize and pos_z >= anchor_z and pos_z <= anchor_z + landSize:
+        _ = {func, function.call('data/mapSet', 'temp.land.deleting', playerIndex, landIndex)}
+        _ = {func, function.call('entry/navigate', 'ACHI_INFO_LAND_DEL')}
+        return True
+      fi
+
+      _ = {func, object.release(landInfo)}
+    rof
+
+    _ = {func, function.call('entry/showError', 14)}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+fi
+
+"
+
+customform oncancel &(formName) "
+// 返回主页
+_ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+"

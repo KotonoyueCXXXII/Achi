@@ -1,0 +1,46 @@
+﻿//地皮克隆：从源坐标逐段 clone 到目标坐标，返回成功率
+taskPtr = {func, tuple.get(args, 0)}
+
+//读取任务参数
+src_x = {func, maps.get(taskPtr, 'src_x')}
+src_z = {func, maps.get(taskPtr, 'src_z')}
+dst_x = {func, maps.get(taskPtr, 'dst_x')}
+dst_z = {func, maps.get(taskPtr, 'dst_z')}
+sizeIndex = {func, maps.get(taskPtr, 'sizeIndex')}
+
+//计算尺寸与分段参数
+landSize = 20 + sizeIndex * 10 - 1
+totalH = 192
+base_y = -64
+maxStep = 81
+
+if sizeIndex == 1:
+  maxStep = 36
+elif sizeIndex == 2:
+  maxStep = 20
+fi
+
+totalSegments = {func, math.floordiv(totalH + maxStep - 1, maxStep)}
+successCount = 0
+playerId = {func, command.get_executor()}
+
+//逐段 clone：按 Y 轴分段执行，统计成功段数
+for seg, totalSegments:
+  start_y = base_y + seg * maxStep
+  end_y = start_y + maxStep - 1
+
+  if end_y > base_y + totalH - 1:
+    end_y = base_y + totalH - 1
+  fi
+
+  cmd = 'clone ' + str(src_x) + ' ' + str(start_y) + ' ' + str(src_z) + ' ' + str(src_x + landSize) + ' ' + str(end_y) + ' ' + str(src_z + landSize) + ' ' + str(dst_x) + ' ' + str(start_y) + ' ' + str(dst_z) + ' replace force'
+  ptr = {func, world.SetCommand(cmd, playerId)}
+
+  if {func, object.deref(ptr)}:
+    successCount = successCount + 1
+  fi
+
+  _ = {func, object.release(ptr)}
+rof
+
+return successCount / totalSegments

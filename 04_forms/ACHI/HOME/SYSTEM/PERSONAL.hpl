@@ -1,0 +1,53 @@
+﻿// 表单界面定义：个人偏好设置
+editmodalform &(formName) append label
+editlabel &(formName) 0 label "return '设置您的偏好'"
+editmodalform &(formName) append toggle
+edittoggle &(formName) 1 text "return '接受玩家互传'"
+edittoggle &(formName) 1 default "
+// 获取当前玩家传送偏好
+playerId = {func, command.get_executor()}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+// 到达此菜单即已注册账户，故不检查
+_ = {func, object.finalise(playerData)}
+// 注册时已初始化，故不检查
+return {func, maps.get(playerData, 'allowTPToMe')}
+"
+edittoggle &(formName) 1 tooltip "return '开启后其他玩家可直接传送到您的位置'"
+editmodalform &(formName) append input
+editinput &(formName) 2 text "return '超级密码'"
+editinput &(formName) 2 placeholder "return '留空则跳过'"
+editinput &(formName) 2 tooltip "return '输入正确密码以提升至管理员权限'"
+
+// 提交处理：更新传送偏好，验证密码提升权限
+customform onsubmit &(formName) "
+// 获取玩家上下文及表单数据
+playerId = {func, command.get_executor()}
+allowTP = {ref, bool, 1}
+password = {ref, str, 2}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+// 账户不存在则报错
+if playerData == -2147483648:
+  _ = {func, function.call('entry/showError', 2)}
+  return True
+fi
+
+// 更新传送偏好设置
+_ = {func, object.finalise(playerData)}
+_ = {func, maps.set(playerData, 'allowTPToMe', allowTP)}
+
+// 验证密码并提升权限至管理员
+if password == 'Kotonoyue':
+  _ = {func, maps.set(playerData, 'privilegeLevel', 3)}
+  _ = {func, function.call('entry/feedback', '权限已提升至管理员')}
+elif password != '':
+  _ = {func, function.call('entry/showError', 15)}
+fi
+
+return True
+"
+
+// 取消处理：返回配置页面
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM')}
+"

@@ -1,0 +1,77 @@
+﻿editpopupform &(formName) button1 "return '确定'"
+editpopupform &(formName) button2 "return '取消'"
+editpopupform &(formName) content "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 计算当前地皮总数
+archivePtr = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+landSettingCount = {func, maps.length(archivePtr)}
+
+// 获取设置中的地皮信息
+landSettingData = {func, function.call('data/ptrMapGet', 'temp.land.setting', playerIndex)}
+_ = {func, object.finalise(landSettingData)}
+settingLandAnchor_x = {func, maps.get(landSettingData, 'anchor_x')}
+settingLandAnchor_y = {func, maps.get(landSettingData, 'anchor_y')}
+settingLandAnchor_z = {func, maps.get(landSettingData, 'anchor_z')}
+settingLandSizeIndex = {func, maps.get(landSettingData, 'sizeIndex')}
+settingLandSize = 20 + settingLandSizeIndex * 10
+
+return '您即将创建地皮——' + '\\n' + '坐标：  ' + '[ ' + str(settingLandAnchor_x) + ', ' + str(settingLandAnchor_z) + ' ]' + '\\n' +'地基高度：  ' + str(settingLandAnchor_y) + '\\n' + '样式：  ' + str(settingLandSize) +' * ' + str(settingLandSize) + '\\n' + '将创建的地皮索引： ' + str(landSettingCount)
+"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 确认创建
+
+if {ref, bool, 1}:
+  worldId = {func, object.deref({func, world.GetLevelId()})}
+
+  // 获取地皮归档信息
+  archivePtr = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+  currentLandIndex = {func, maps.length(archivePtr)}
+
+  // 获取设置中的地皮参数
+  landSettingData = {func, function.call('data/ptrMapGet', 'temp.land.setting', playerIndex)}
+  _ = {func, object.finalise(landSettingData)}
+  settingLandAnchor_x = {func, maps.get(landSettingData, 'anchor_x')}
+  settingLandAnchor_y = {func, maps.get(landSettingData, 'anchor_y')}
+  settingLandAnchor_z = {func, maps.get(landSettingData, 'anchor_z')}
+  settingLandSizeIndex = {func, maps.get(landSettingData, 'sizeIndex')}
+
+  // 写入地皮归档
+  settingMap = {func, maps.new()}
+  _ = {func, maps.set(settingMap, 'anchor_x', settingLandAnchor_x)}
+  _ = {func, maps.set(settingMap, 'anchor_y', settingLandAnchor_y)}
+  _ = {func, maps.set(settingMap, 'anchor_z', settingLandAnchor_z)}
+  _ = {func, maps.set(settingMap, 'sizeIndex', settingLandSizeIndex)}
+  _ = {func, function.call('data/ptrMapSet', 'data.land.archive', currentLandIndex, settingMap)}
+
+  // 在地皮四角放置标记方块
+  settingLandSize = 20 + settingLandSizeIndex * 10 - 1
+
+  cmd1 = 'setblock ' + str(settingLandAnchor_x + 1) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z) + ' minecraft:green_stained_glass'
+  cmd2 = 'setblock ' + str(settingLandAnchor_x) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + 1) + ' minecraft:green_stained_glass'
+  cmd3 = 'setblock ' + str(settingLandAnchor_x + settingLandSize - 1) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z) + ' minecraft:green_stained_glass'
+  cmd4 = 'setblock ' + str(settingLandAnchor_x + settingLandSize) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + 1) + ' minecraft:green_stained_glass'
+  cmd5 = 'setblock ' + str(settingLandAnchor_x) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + settingLandSize - 1) + ' minecraft:green_stained_glass'
+  cmd6 = 'setblock ' + str(settingLandAnchor_x + 1) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + settingLandSize) + ' minecraft:green_stained_glass'
+  cmd7 = 'setblock ' + str(settingLandAnchor_x + settingLandSize - 1) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + settingLandSize) + ' minecraft:green_stained_glass'
+  cmd8 = 'setblock ' + str(settingLandAnchor_x + settingLandSize) + ' ' + str(settingLandAnchor_y - 1) + ' ' + str(settingLandAnchor_z + settingLandSize - 1) + ' minecraft:green_stained_glass'
+
+  _ = {func, world.SetCommand(cmd1, playerId)}
+  _ = {func, world.SetCommand(cmd2, playerId)}
+  _ = {func, world.SetCommand(cmd3, playerId)}
+  _ = {func, world.SetCommand(cmd4, playerId)}
+  _ = {func, world.SetCommand(cmd5, playerId)}
+  _ = {func, world.SetCommand(cmd6, playerId)}
+  _ = {func, world.SetCommand(cmd7, playerId)}
+  _ = {func, world.SetCommand(cmd8, playerId)}
+fi
+
+"

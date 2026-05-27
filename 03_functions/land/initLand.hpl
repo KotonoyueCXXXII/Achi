@@ -1,0 +1,71 @@
+﻿//地皮初始化：清空区域 → 铺草皮 → 放置绿色玻璃标记
+anchor_x = {func, tuple.get(args, 0)}
+anchor_y = {func, tuple.get(args, 1)}
+anchor_z = {func, tuple.get(args, 2)}
+sizeIndex = {func, tuple.get(args, 3)}
+playerId = {func, command.get_executor()}
+
+//计算地皮尺寸与清空参数
+landSize = 20 + sizeIndex * 10 - 1
+ground_y = anchor_y - 1
+totalH = 192
+maxStep = 81
+
+if sizeIndex == 1:
+  maxStep = 36
+elif sizeIndex == 2:
+  maxStep = 20
+fi
+
+totalSegments = {func, math.floordiv(totalH + maxStep - 1, maxStep)}
+
+// 构建清空命令：逐段将地皮上方空间全部填充为空气
+for seg, totalSegments:
+  start_y = ground_y + seg * maxStep
+  end_y = start_y + maxStep - 1
+  clearTop = ground_y + totalH - 1
+
+  if end_y > clearTop:
+    end_y = clearTop
+  fi
+
+  cmd = 'fill ' + str(anchor_x) + ' ' + str(start_y) + ' ' + str(anchor_z) + ' ' + str(anchor_x + landSize) + ' ' + str(end_y) + ' ' + str(anchor_z + landSize) + ' air'
+  _ = {func, world.SetCommand(cmd, playerId)}
+rof
+
+// 构建草皮与角标命令
+halfSize = {func, math.floordiv(landSize, 2)}
+idx = sizeIndex
+
+grassCmd = 'fill ' + str(anchor_x) + ' ' + str(ground_y) + ' ' + str(anchor_z) + ' ' + str(anchor_x + landSize) + ' ' + str(ground_y) + ' ' + str(anchor_z + landSize) + ' grass'
+
+glassCmd1 = 'setblock ' + str(anchor_x + 1) + ' ' + str(ground_y) + ' ' + str(anchor_z) + ' minecraft:green_stained_glass'
+glassCmd2 = 'setblock ' + str(anchor_x) + ' ' + str(ground_y) + ' ' + str(anchor_z + 1) + ' minecraft:green_stained_glass'
+glassCmd3 = 'setblock ' + str(anchor_x + landSize - 1) + ' ' + str(ground_y) + ' ' + str(anchor_z) + ' minecraft:green_stained_glass'
+glassCmd4 = 'setblock ' + str(anchor_x + landSize) + ' ' + str(ground_y) + ' ' + str(anchor_z + 1) + ' minecraft:green_stained_glass'
+glassCmd5 = 'setblock ' + str(anchor_x) + ' ' + str(ground_y) + ' ' + str(anchor_z + landSize - 1) + ' minecraft:green_stained_glass'
+glassCmd6 = 'setblock ' + str(anchor_x + 1) + ' ' + str(ground_y) + ' ' + str(anchor_z + landSize) + ' minecraft:green_stained_glass'
+glassCmd7 = 'setblock ' + str(anchor_x + landSize - 1) + ' ' + str(ground_y) + ' ' + str(anchor_z + landSize) + ' minecraft:green_stained_glass'
+glassCmd8 = 'setblock ' + str(anchor_x + landSize) + ' ' + str(ground_y) + ' ' + str(anchor_z + landSize - 1) + ' minecraft:green_stained_glass'
+
+glassCmd9 = 'setblock ' + str(anchor_x + halfSize - idx) + ' ' + str(ground_y) + ' ' + str(anchor_z + halfSize - idx) + ' minecraft:green_stained_glass'
+glassCmd10 = 'setblock ' + str(anchor_x + halfSize + 1 + idx) + ' ' + str(ground_y) + ' ' + str(anchor_z + halfSize - idx) + ' minecraft:green_stained_glass'
+glassCmd11 = 'setblock ' + str(anchor_x + halfSize - idx) + ' ' + str(ground_y) + ' ' + str(anchor_z + halfSize + 1 + idx) + ' minecraft:green_stained_glass'
+glassCmd12 = 'setblock ' + str(anchor_x + halfSize + 1 + idx) + ' ' + str(ground_y) + ' ' + str(anchor_z + halfSize + 1 + idx) + ' minecraft:green_stained_glass'
+
+// 执行草皮与角标命令
+_ = {func, world.SetCommand(grassCmd, playerId)}
+_ = {func, world.SetCommand(glassCmd1, playerId)}
+_ = {func, world.SetCommand(glassCmd2, playerId)}
+_ = {func, world.SetCommand(glassCmd3, playerId)}
+_ = {func, world.SetCommand(glassCmd4, playerId)}
+_ = {func, world.SetCommand(glassCmd5, playerId)}
+_ = {func, world.SetCommand(glassCmd6, playerId)}
+_ = {func, world.SetCommand(glassCmd7, playerId)}
+_ = {func, world.SetCommand(glassCmd8, playerId)}
+_ = {func, world.SetCommand(glassCmd9, playerId)}
+_ = {func, world.SetCommand(glassCmd10, playerId)}
+_ = {func, world.SetCommand(glassCmd11, playerId)}
+_ = {func, world.SetCommand(glassCmd12, playerId)}
+
+return True

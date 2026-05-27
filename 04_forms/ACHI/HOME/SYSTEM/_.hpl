@@ -1,0 +1,44 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '个人配置'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '全局配置'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '开发者选项'"
+
+customform onsubmit &(formName) "
+// 个人配置
+if {ref, bool, 0}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM_PERSONAL')}
+
+// 全局配置（需管理员权限）
+elif {ref, bool, 1}:
+  playerId = {func, command.get_executor()}
+  playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+  _ = {func, object.finalise(playerData)}
+  privilege = {func, maps.get(playerData, 'privilegeLevel')}
+
+  if privilege >= 3:
+    _ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM_GLOBAL')}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+
+// 开发者选项（需管理员权限）
+elif {ref, bool, 2}:
+  playerId = {func, command.get_executor()}
+  playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+  _ = {func, object.finalise(playerData)}
+  privilege = {func, maps.get(playerData, 'privilegeLevel')}
+
+  if privilege >= 3:
+    _ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM_DEBUG')}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+fi
+
+"
+
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+"

@@ -1,0 +1,30 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '行政定点'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '社区定点'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '个人锚点'"
+editlongform &(formName) append button
+editbutton &(formName) 3 text "return '共享锚点'"
+
+customform onsubmit &(formName) "
+// 行政定点
+
+if {ref, bool, 0}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_FIXED-A')}
+// 社区定点
+elif {ref, bool, 1}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_FIXED-B')}
+// 个人锚点
+elif {ref, bool, 2}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_ANCHOR')}
+// 共享锚点
+elif {ref, bool, 3}:
+fi
+
+"
+
+customform oncancel &(formName) "
+// 返回主页
+_ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+"

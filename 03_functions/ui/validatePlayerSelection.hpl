@@ -1,0 +1,27 @@
+﻿//验证玩家选择有效性：快照存在 → 槽位有效 → 身份一致
+playerIndex = {func, tuple.get(args, 0)}
+
+// 获取选中的目标槽位
+settingPlayerIndex = {func, function.call('data/mapGet', 'temp.menu.settingPlayer', playerIndex)}
+
+// 取快照
+snapshotData = {func, function.call('data/ptrMapGet', 'temp.menu.playerIndexSnapshot', playerIndex)}
+
+if snapshotData != -2147483648:
+  _ = {func, object.finalise(snapshotData)}
+
+  if {func, maps.exist(snapshotData, settingPlayerIndex)}:
+    expectedPlayerId = {func, maps.get(snapshotData, settingPlayerIndex)}
+    currentPlayerId = {func, function.call('data/mapGet', 'temp.player.index', settingPlayerIndex)}
+
+    if expectedPlayerId == currentPlayerId:
+      return 0
+    fi
+
+    return 2
+  fi
+
+  return 4
+fi
+
+return 3

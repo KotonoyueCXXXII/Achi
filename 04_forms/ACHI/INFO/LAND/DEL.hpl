@@ -1,0 +1,90 @@
+﻿editpopupform &(formName) button1 "return '确定'"
+editpopupform &(formName) button2 "return '取消'"
+editpopupform &(formName) content "
+// 获取地皮索引
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+deletingLandIndex = {func, function.call('data/mapGet', 'temp.land.deleting', playerIndex)}
+
+// 验证地皮有效性
+
+if deletingLandIndex == -2147483648:
+  return '你当前站立位置不在任何地皮内。 '
+fi
+
+landData = {func, function.call('data/ptrMapGet', 'data.land.archive', deletingLandIndex)}
+
+if landData == -2147483648:
+  return '地皮数据不存在'
+fi
+
+_ = {func, object.finalise(landData)}
+
+// 读取地皮信息
+pos_x = {func, maps.get(landData, 'anchor_x')}
+pos_y = {func, maps.get(landData, 'anchor_y')}
+pos_z = {func, maps.get(landData, 'anchor_z')}
+sizeIndex = {func, maps.get(landData, 'sizeIndex')}
+landSize = 20 + sizeIndex * 10
+return '地皮编号： ' + str(deletingLandIndex) + '\\n坐标：  [ ' + str(pos_x) + ', ' + str(pos_z) + ' ]\\n地基高度： ' + str(pos_y) + '\\n边长： ' + str(landSize) + ' \* ' + str(landSize)
+"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+deletingLandIndex = {func, function.call('data/mapGet', 'temp.land.deleting', playerIndex)}
+
+// 确认删除
+
+if {ref, bool, 1}:
+  // 检查备份队列：如有待处理任务则拒绝删除
+  queuePtr = {func, entity.GetExtraData(worldId, 'queue.land.backup')}
+
+  if {func, object.ref_type(queuePtr)} == 6:
+
+    for i, 64:
+
+      if {func, maps.ptr_exist(queuePtr, {func, object.ref(i)})}:
+        taskPtr = {func, maps.ptr_get(queuePtr, {func, object.ref(i)})}
+
+        if {func, maps.get(taskPtr, 'deletingLandIndex')} == deletingLandIndex:
+          _ = {func, function.call('entry/showError', 16)}
+          return True
+        fi
+      fi
+    rof
+  fi
+
+  // 解除使用该地皮的玩家绑定
+  landUsingPlayerIndex = {func, function.call('data/mapKeyOf', 'temp.land.using', deletingLandIndex)}
+
+  if landUsingPlayerIndex != -2147483648:
+    _ = {func, function.call('data/mapDel', 'temp.land.using', landUsingPlayerIndex)}
+    landUsingPlayerId = {func, function.call('data/mapGet', 'temp.player.index', landUsingPlayerIndex)}
+    _ = {func, command.set_executor(landUsingPlayerId)}
+    _ = {func, function.call('entry/feedback', '你的地皮已被管理员移除')}
+    _ = {func, command.set_executor(playerId)}
+  fi
+
+  // 从地皮归档中移除
+  archivePtr = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+  totalLand = {func, maps.length(archivePtr)}
+
+  if totalLand > deletingLandIndex + 1:
+    lastIndex = totalLand - 1
+    lastLandData = {func, function.call('data/ptrMapGet', 'data.land.archive', lastIndex)}
+    _ = {func, object.finalise(lastLandData)}
+    _ = {func, function.call('data/ptrMapSet', 'data.land.archive', deletingLandIndex, lastLandData)}
+    _ = {func, function.call('data/mapDel', 'data.land.archive', lastIndex)}
+  else:
+    _ = {func, function.call('data/mapDel', 'data.land.archive', deletingLandIndex)}
+  fi
+
+  // 通知操作结果
+  msg = '地皮 ' + str(deletingLandIndex) + ' 已删除'
+  _ = {func, function.call('entry/feedback', msg)}
+fi
+
+"

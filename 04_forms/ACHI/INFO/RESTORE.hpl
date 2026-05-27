@@ -1,0 +1,66 @@
+﻿editpopupform &(formName) content "return '系统检测到您在本房间内保有建筑数据，点击确定将自动为您找到合适地皮并加载您的建筑。'"
+editpopupform &(formName) button1 "return '确定恢复'"
+editpopupform &(formName) button2 "return '稍后再说'"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+
+// 确定恢复
+
+if {ref, bool, 1}:
+  // 获取账户数据
+  playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+  // 到达此页面即账户存在
+  _ = {func, object.finalise(playerData)}
+  playerUID = {func, maps.get(playerData, 'uid')}
+  savedSizeIndex = {func, maps.get(playerData, 'saveSizeIndex')}
+
+  // 查找空闲地皮
+  freeLandIndex = {func, function.call('land/getFreeIndex', savedSizeIndex)}
+
+  if freeLandIndex == -2147483648:
+    _ = {func, function.call('entry/showError', 6)}
+    return True
+  fi
+
+// 计算地皮中心坐标
+landData = {func, function.call('data/ptrMapGet', 'data.land.archive', freeLandIndex)}
+
+//此处不必验证，该索引的地皮数据已经通过'land/getFreeIndex'验证
+_ = {func, object.finalise(landData)}
+anchor_x = {func, maps.get(landData, 'anchor_x')}
+anchor_y = {func, maps.get(landData, 'anchor_y')}
+anchor_z = {func, maps.get(landData, 'anchor_z')}
+sizeIndex = savedSizeIndex
+landSize = 20 + sizeIndex * 10 - 1
+centerOffset = {func, math.floordiv(landSize, 2)}
+center_x = anchor_x + centerOffset
+center_z = anchor_z + centerOffset
+center_y = anchor_y + 64
+
+// 传送至地皮中心
+_ = {func, entity.SetPos(playerId, {func, tuple.new(center_x, center_y, center_z)})}
+
+// 绑定地皮到玩家
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index',playerId)}
+_ = {func, function.call('data/mapSet', 'temp.land.using', playerIndex,freeLandIndex)}
+
+// 提交恢复任务
+taskMap = {func, maps.new(False)}
+_ = {func, maps.set(taskMap, 'playerUID', playerUID)}
+_ = {func, maps.set(taskMap, 'playerId', playerId)}
+_ = {func, maps.set(taskMap, 'mode', 1)}
+_ = {func, maps.set(taskMap, 'landIndex', freeLandIndex)}
+_ = {func, maps.set(taskMap, 'state', 0)}
+_ = {func, maps.set(taskMap, 'retry', 0)}
+_ = {func, maps.set(taskMap, 'playerIndex', playerIndex)}
+_ = {func, function.call('queue/push', 'queue.land.backup', taskMap)}
+
+// 跳转至地皮页面
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_LAND')}
+  _ = {func, function.call('entry/feedback', '已为您分配地皮并提交恢复请求，建筑正在恢复中。')}
+fi
+
+return True
+"

@@ -1,0 +1,58 @@
+﻿playerId = {func, maps.get(args, 'entityId')}
+pos_x = {func, maps.get(args, 'x')}
+pos_y = {func, maps.get(args, 'y')}
+pos_z = {func, maps.get(args, 'z')}
+_ = {func, command.fast_set(playerId, False)}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+if {func, object.deref({func, entity.EntityHasTag(playerId, 'isSettingLand')})}:
+  _ = {func, maps.set(args, 'ret', True)}
+  landSettingData = {func, function.call('data/ptrMapGet', 'temp.land.setting', playerIndex)}
+  //由于条件是创建账户，故此处不进行返回值检查
+  _ = {func, object.finalise(landSettingData)}
+  _ = {func, maps.set(landSettingData, 'anchor_x', pos_x)}
+  _ = {func, maps.set(landSettingData, 'anchor_y', pos_y + 1)}
+  _ = {func, maps.set(landSettingData, 'anchor_z', pos_z)}
+
+  _ = {func, entity.RemoveEntityTag(playerId, 'isSettingLand')}
+
+  _ = {func, function.call('entry/navigate', 'ACHI_INFO_LAND_SET')}
+  return True
+fi
+
+//验证方块放置是否合法
+_ = {func, maps.set(args, 'ret', True)}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+// 账户存在
+if playerData != -2147483648:
+  playerPrivilegeLevel = {func, maps.get(playerData, 'privilegeLevel')}
+
+  // 会员及以上，直接放行
+  if playerPrivilegeLevel > 1:
+    _ = {func, maps.set(args, 'ret', False)}
+  // 成员，需在地皮范围内
+  elif playerPrivilegeLevel > 0:
+    usingLandIndex = {func, function.call('data/mapGet', 'temp.land.using', playerIndex)}
+
+    // 在使用中的地皮
+    if usingLandIndex != -2147483648:
+      landData = {func, function.call('data/ptrMapGet', 'data.land.archive',  usingLandIndex)}
+      usingLandSizeIndex = {func, maps.get(landData, 'sizeIndex')}
+      usingLandPos_x = {func, maps.get(landData, 'anchor_x')}
+      usingLandPos_y = {func, maps.get(landData, 'anchor_y')}
+      usingLandPos_z = {func, maps.get(landData, 'anchor_z')}
+      usingLandSize = 20 + usingLandSizeIndex * 10 - 1
+
+      // 坐标在地皮范围内
+      if pos_x - usingLandPos_x >= 0 and pos_x - usingLandPos_x <= usingLandSize and pos_z - usingLandPos_z >= 0 and pos_z - usingLandPos_z <= usingLandSize:
+        _ = {func, maps.set(args, 'ret', False)}
+      fi
+      _ = {func, object.finalise(landData)}
+    fi
+  fi
+  _ = {func, object.finalise(playerData)}
+fi
+
+return True
+

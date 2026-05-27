@@ -1,0 +1,47 @@
+﻿editlongform &(formName) content "return '请选择要查看或设置的锚点槽位：'"
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editbutton &(formName) 0 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 1, playerId)}"
+editbutton &(formName) 1 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 2, playerId)}"
+editbutton &(formName) 2 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 3, playerId)}"
+editbutton &(formName) 3 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 4, playerId)}"
+editbutton &(formName) 4 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 5, playerId)}"
+editbutton &(formName) 5 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 6, playerId)}"
+editbutton &(formName) 6 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 7, playerId)}"
+editbutton &(formName) 7 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 8, playerId)}"
+editbutton &(formName) 8 text "playerId = {func, command.get_executor()}
+return {func, function.call('ui/getAnchorButtonText', 9, playerId)}"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文及槽位选择
+playerId = {func, command.get_executor()}
+selectedIndex = {ref, int, -1}
+slot = selectedIndex + 1
+
+// 记录锚点槽位
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+_ = {func, function.call('data/mapSet', 'temp.menu.anchorSlot', playerIndex, slot)}
+
+// 打开锚点操作页面
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_ANCHOR_SET')}
+"
+
+customform oncancel &(formName) "
+// 返回地点传送
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_TP')}
+"

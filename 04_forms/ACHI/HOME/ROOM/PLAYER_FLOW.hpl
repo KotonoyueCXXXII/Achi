@@ -1,0 +1,35 @@
+﻿// 玩家游玩流程说明（仅供查看）
+editlongform &(formName) content "
+text = '§l§6▎ 玩家游玩流程 §r'
+
+text = text + '\\n'
+text = text + '\\n§l一、访客 §7(刚进入房间)§r'
+text = text + '\\n  ├── 抬头看天空 → 弹出主菜单'
+text = text + '\\n  ├── 阅读并同意协议 → 晋升为成员'
+text = text + '\\n  └── 拒绝协议 → 保持访客，无法建造'
+text = text + '\\n'
+text = text + '\\n§l二、成员 §7(同意协议后)§r'
+text = text + '\\n  ├── 获取一块私人地皮，在地皮内自由建造'
+text = text + '\\n  ├── 使用固定传送点和 9 个个人锚点'
+text = text + '\\n  ├── 与其他玩家互传（双方需各自开启传送许可）'
+text = text + '\\n  ├── 设置个人偏好（如是否允许别人传送到你身边）'
+text = text + '\\n  └── 输入超级密码 → 直接晋升为管理员'
+text = text + '\\n'
+text = text + '\\n§l三、会员 §7(通过审核后)§r'
+text = text + '\\n  ├── 在世界任意位置自由建造'
+text = text + '\\n  ├── 建筑纳入房主管护范围'
+text = text + '\\n  └── 参与社区主题建设'
+text = text + '\\n'
+text = text + '\\n§l四、管理员 §7(输入密码提升)§r'
+text = text + '\\n  ├── 踢出违规玩家'
+text = text + '\\n  ├── 解绑任意玩家的地皮'
+text = text + '\\n  ├── 调整其他玩家的权限等级'
+text = text + '\\n  ├── 传送至任意玩家不受限制'
+text = text + '\\n  └── 使用全局管理调试数据'
+
+return text
+"
+
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM')}
+"

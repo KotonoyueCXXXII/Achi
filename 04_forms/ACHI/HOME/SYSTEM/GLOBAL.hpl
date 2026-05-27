@@ -1,0 +1,6 @@
+﻿// 全局管理（暂无操作项）
+editlongform &(formName) content "return '§l全局管理\\n§r以下操作影响整个服务器，请谨慎使用'"
+
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM')}
+"

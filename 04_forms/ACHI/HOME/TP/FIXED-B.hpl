@@ -1,0 +1,30 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '锻融江西岸'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '猫尾港'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '锻融江东岸'"
+
+customform onsubmit &(formName) "
+playerId = {func, command.get_executor()}
+
+// 锻融江西岸
+
+if {ref, bool, 0}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-3241, -56, -152)})}
+
+// 猫尾港
+elif {ref, bool, 1}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-2468, -48, -1699)})}
+
+// 锻融江东岸
+elif {ref, bool, 2}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-2422, -60, 100)})}
+fi
+
+"
+
+customform oncancel &(formName) "
+// 返回地点传送
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_TP')}
+"

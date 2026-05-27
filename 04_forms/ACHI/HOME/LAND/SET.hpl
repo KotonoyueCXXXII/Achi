@@ -1,0 +1,29 @@
+﻿editlongform &(formName) content "return '请选择你要设置的地皮大小'"
+editlongform &(formName) append button
+editbutton &(formName) 0 text "return '20\*20'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '30\*30'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '40\*40'"
+
+customform onsubmit &(formName) "
+// 获取选择的地皮尺寸
+sizeIndex = {ref, int, -1}
+
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 暂存设置信息
+LandsettingInfo = {func, maps.new()}
+_ = {func, maps.set(LandsettingInfo, 'sizeIndex', sizeIndex)}
+_ = {func, function.call('data/ptrMapSet', 'temp.land.setting', playerIndex, LandsettingInfo)}
+
+// 进入设置模式
+_ = {func, entity.AddEntityTag(playerId, 'isSettingLand')}
+"
+
+customform oncancel &(formName) "
+// 返回地皮操作
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_LAND')}
+"

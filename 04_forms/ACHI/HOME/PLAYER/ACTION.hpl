@@ -1,0 +1,127 @@
+﻿// 表单内容与提示
+editlongform &(formName) content "return '为防止玩家掉线，请尽快操作。'"
+
+// 操作按钮定义
+editlongform &(formName) append button
+editbutton &(formName) 0 text "return '传送'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '私信'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '普通踢'"
+editlongform &(formName) append button
+editbutton &(formName) 3 text "return '强力踢'"
+editlongform &(formName) append button
+editbutton &(formName) 4 text "return '解绑地皮'"
+editlongform &(formName) append button
+editbutton &(formName) 5 text "return '高级设置'"
+
+// 提交处理：获取玩家上下文及目标信息
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 获取权限
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+//由于使用此界面的前提是创建账户，故此处不进行返回值检查
+_ = {func, object.finalise(playerData)}
+privilege = {func, maps.get(playerData, 'privilegeLevel')}
+
+// 验证目标玩家有效性
+err = {func, function.call('ui/validatePlayerSelection', playerIndex)}
+
+if err != 0:
+  _ = {func, function.call('entry/showError', err)}
+  return True
+fi
+
+settingPlayerIndex = {func, function.call('data/mapGet', 'temp.menu.settingPlayer', playerIndex)}
+targetId = {func, function.call('data/mapGet', 'temp.player.index', settingPlayerIndex)}
+targetName = {func, object.deref({func, entity.GetName(targetId)})}
+
+// 传送至目标玩家
+
+if {ref, bool, 0}:
+
+  // 非管理员需检查目标玩家传送偏好
+  if privilege != 3:
+    targetPlayerData = {func, function.call('data/ptrMapGet', 'data.player.archive', targetId)}
+
+    if targetPlayerData == -2147483648:
+      _ = {func, function.call('entry/showError', 17)}
+      return True
+    fi
+
+    _ = {func, object.finalise(targetPlayerData)}
+
+    if not {func, maps.get(targetPlayerData, 'allowTPToMe')}:
+      _ = {func, function.call('entry/showError', 17)}
+      return True
+    fi
+  fi
+
+  targetPos = {func, entity.GetFootPos(targetId)}
+  _ = {func, entity.SetPos(playerId, targetPos)}
+  _ = {func, function.call('entry/feedback', '已传送至目标玩家')}
+
+// 私信
+elif {ref, bool, 1}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER_MESSAGE')}
+
+// 普通踢出
+elif {ref, bool, 2}:
+
+  if privilege == 3:
+    cmd = 'kick \"' + targetName + '\"'
+    _ = {func, world.SetCommand(cmd, playerId)}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+
+// 强力踢出（待实现）
+elif {ref, bool, 3}:
+
+// 解绑目标玩家地皮
+elif {ref, bool, 4}:
+
+  if privilege == 3:
+    targetPlayerData = {func, function.call('data/ptrMapGet', 'data.player.archive', targetId)}
+
+    if targetPlayerData == -2147483648:
+      _ = {func, function.call('entry/showError', 8)}
+      return True
+    fi
+
+    _ = {func, object.finalise(targetPlayerData)}
+
+    if not {func, function.call('data/mapExist', 'temp.land.using', settingPlayerIndex)}:
+      _ = {func, function.call('entry/showError', 11)}
+      return True
+    fi
+
+    _ = {func, function.call('data/mapDel', 'temp.land.using', settingPlayerIndex)}
+    _ = {func, maps.del(targetPlayerData, 'saveSizeIndex')}
+    _ = {func, command.set_executor(targetId)}
+    _ = {func, function.call('entry/feedback', '你的地皮已被管理员解除绑定')}
+    _ = {func, command.set_executor(playerId)}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+
+// 高级管理设置
+elif {ref, bool, 5}:
+
+  if privilege == 3:
+    _ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER_ADMIN')}
+  else:
+    _ = {func, function.call('entry/showError', 5)}
+  fi
+fi
+
+return True
+"
+
+// 取消处理：返回玩家列表
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER')}
+"

@@ -1,0 +1,26 @@
+﻿playerId = {func, maps.get(args, 'id')}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+if playerData != -2147483648:
+  playerUID = {func, maps.get(playerData, 'uid')}
+  usingLandIndex = {func, function.call('data/mapGet', 'temp.land.using', playerIndex)}
+
+  if usingLandIndex != -2147483648:
+    taskMap = {func, maps.new(False)}
+    _ = {func, maps.set(taskMap, 'playerUID', playerUID)}
+    _ = {func, maps.set(taskMap, 'playerId', playerId)}
+    _ = {func, maps.set(taskMap, 'mode', 0)}
+    _ = {func, maps.set(taskMap, 'landIndex', usingLandIndex)}
+    _ = {func, maps.set(taskMap, 'state', 0)}
+    _ = {func, maps.set(taskMap, 'retry', 0)}
+    _ = {func, maps.set(taskMap, 'playerIndex', playerIndex)}
+    _ = {func, function.call('queue/push', 'queue.land.backup', taskMap)}
+  fi
+
+  _ = {func, object.finalise(playerData)}
+fi
+
+_ = {func, function.call('data/mapDel', 'temp.player.index', playerIndex)}
+return True
+

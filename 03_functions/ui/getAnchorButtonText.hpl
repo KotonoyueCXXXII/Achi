@@ -1,0 +1,22 @@
+﻿anchorIndex = {func, tuple.get(args, 0)}
+playerId = {func, tuple.get(args, 1)}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+//由于使用锚点的前提是创建账户，故不检查
+_ = {func, object.finalise(playerData)}
+result = '§e§l【§f■ §e锚点 ' + str(anchorIndex) + '§e】§r\\n§7【§f待设置§7】'
+
+// 有锚点数据
+if {func, maps.exist(playerData, 'anchors')}:
+  anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+
+  // 该锚点槽位已设置
+  if {func, maps.ptr_exist(anchorsMap, {func, object.ref(anchorIndex)})}:
+    posTuple = {func, maps.ptr_get(anchorsMap, {func, object.ref(anchorIndex)})}
+    x = {func, tuple.get(posTuple, 0)}
+    y = {func, tuple.get(posTuple, 1)}
+    z = {func, tuple.get(posTuple, 2)}
+    result = '§e§l【§f■ §e锚点 ' + str(anchorIndex) + '§e】§r\\n§7【§b(' + str(x) + ', ' + str(y) + ', ' + str(z) + ')§7】'
+  fi
+fi
+
+return result

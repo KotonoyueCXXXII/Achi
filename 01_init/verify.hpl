@@ -1,0 +1,36 @@
+﻿worldId = {func, object.deref({func, world.GetLevelId()})}
+playerId = {func, command.get_executor()}
+
+// 定义预期安装的关键函数列表
+expectedFuncs = {func, slices.new('data/ptrMapGet', 'data/mapGet', 'data/mapSet', 'data/mapExist', 'data/mapDel', 'data/mapKeyOf', 'data/ptrMapSet', 'data/ptrMapDel', 'queue/push', 'queue/pop', 'queue/peek', 'entry/feedback', 'entry/debug', 'land/processBackup', 'land/processInit', 'land/checkChunks', 'land/cloneLand', 'land/initLand', 'land/getFreeIndex', 'land/squareSpiralFill', 'entry/navigate', 'ui/openMenu', 'entry/showError', 'ui/validatePlayerSelection', 'ui/createPlayerSnapshot', 'ui/getAnchorButtonText', 'ui/getSnapshotName', 'main')}
+expectedLen = {func, slices.length(expectedFuncs)}
+
+// 逐个检查，拼接缺失函数名
+missingMsg = ''
+missingCount = 0
+foundCount = 0
+for i, expectedLen:
+  funcName = {func, slices.get(expectedFuncs, i)}
+  exists = {func, object.deref({func, function.list(funcName)})}
+
+  if exists:
+    foundCount = foundCount + 1
+  else:
+    if missingCount > 0:
+      missingMsg = missingMsg + ', '
+    fi
+    missingMsg = missingMsg + funcName
+    missingCount = missingCount + 1
+  fi
+rof
+
+// 输出验证结果
+if missingCount > 0:
+  msg = '§e--------------------\\n§f验证结果: §c失败 §7| §f已注册: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§c缺失: §f' + missingMsg + '\\n§e--------------------'
+else:
+  msg = '§e--------------------\\n§f验证结果: §a全部通过 §7| §f已注册: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§e--------------------'
+fi
+
+cmd = 'tellraw @a {\"rawtext\":[{\"text\":\"' + msg + '\"}]}'
+_ = {func, world.SetCommand(cmd, playerId)}
+return True

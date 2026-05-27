@@ -1,0 +1,60 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '主城-地皮规划区'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '零露广场-地皮规划区'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '四境-高地层厚度区域'"
+editlongform &(formName) append button
+editbutton &(formName) 3 text "return '红石专区'"
+editlongform &(formName) append button
+editbutton &(formName) 4 text "return '载具专区'"
+editlongform &(formName) append button
+editbutton &(formName) 5 text "return '像素画专区'"
+editlongform &(formName) append button
+editbutton &(formName) 6 text "return '系统备份放置区域'"
+editlongform &(formName) append button
+editbutton &(formName) 7 text "return '托管暂存放置区域'"
+
+customform onsubmit &(formName) "
+playerId = {func, command.get_executor()}
+
+// 主城-地皮规划区
+
+if {ref, bool, 0}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-3273, -57, -1150)})}
+
+// 零露广场-地皮规划区
+elif {ref, bool, 1}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-2815.5, -59, -563.5)})}
+
+// 四境-高地层厚度区域
+elif {ref, bool, 2}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(11086, 0, 12735)})}
+
+// 红石专区
+elif {ref, bool, 3}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-9990, -60, 250)})}
+
+// 载具专区
+elif {ref, bool, 4}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(512, -60, 10240)})}
+
+// 像素画专区
+elif {ref, bool, 5}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(-9990, -60, 10490)})}
+
+// 系统备份放置区域
+elif {ref, bool, 6}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(1048576, 0, 1048576)})}
+
+// 托管暂存放置区域
+elif {ref, bool, 7}:
+  _ = {func, entity.SetPos(playerId, {func, tuple.new(191981, 0, 191981)})}
+fi
+
+"
+
+customform oncancel &(formName) "
+// 返回地点传送
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_TP')}
+"

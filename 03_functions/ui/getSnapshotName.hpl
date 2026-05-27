@@ -1,0 +1,8 @@
+﻿index = {func, tuple.get(args, 0)}
+displayPlayerId = {func, function.call('data/mapGet', 'temp.player.index', index)}
+
+if displayPlayerId == -2147483648:
+  return '- 无 -'
+else:
+  return {func, object.deref({func, entity.GetName(displayPlayerId)})}
+fi

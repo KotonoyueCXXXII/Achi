@@ -1,0 +1,21 @@
+﻿editlongform &(formName) append button
+editbutton &(formName) 0 text "return '阅读协议'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '地皮流程'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '游玩流程'"
+
+customform onsubmit &(formName) "
+if {ref, bool, 0}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM_AGREEMENT_VIEW')}
+elif {ref, bool, 1}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM_LAND_WORKFLOW')}
+elif {ref, bool, 2}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM_PLAYER_FLOW')}
+fi
+
+"
+
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+"

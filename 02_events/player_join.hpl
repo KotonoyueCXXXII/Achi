@@ -1,0 +1,52 @@
+﻿playerId = {func, maps.get(args, 'id')}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+
+// 服务器空载启动 — 备份异常关闭后残留的使用中的地皮
+if {func, slices.length({func, world.GetPlayerList()})} == 0:
+  usingLand = {func, entity.GetExtraData(worldId, 'temp.land.using')}
+  usingLand_length = {func, maps.length(usingLand)}
+
+  if usingLand_length != 0:
+    usingLand_items = {func, maps.items(usingLand)}
+
+    for itemIndex, usingLand_length:
+      usingLand_item = {func, slices.ptr_get(usingLand_items, itemIndex)}
+      landPlayerIndex = {func, tuple.get(usingLand_item, 0)}
+      landIndex = {func, tuple.get(usingLand_item, 1)}
+      landPlayerId = {func, function.call('data/mapGet', 'temp.player.index', landPlayerIndex)}
+
+      if landPlayerId != -2147483648:
+        playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', landPlayerId)}
+        //由于使用地皮的条件是创建账户，故此处不进行返回值检查
+        _ = {func, object.finalise(playerData)}
+        playerUID = {func, maps.get(playerData, 'uid')}
+        taskMap = {func, maps.new(False)}
+        _ = {func, maps.set(taskMap, 'playerUID', playerUID)}
+        _ = {func, maps.set(taskMap, 'playerId', landPlayerId)}
+        _ = {func, maps.set(taskMap, 'mode', 0)}
+        _ = {func, maps.set(taskMap, 'landIndex', landIndex)}
+        _ = {func, maps.set(taskMap, 'state', 0)}
+        _ = {func, maps.set(taskMap, 'retry', 0)}
+        _ = {func, maps.set(taskMap, 'playerIndex', landPlayerIndex)}
+        _ = {func, function.call('queue/push', 'queue.land.backup', taskMap)}
+      fi
+    rof
+  fi
+
+  // 清理并重建临时域
+  _ = {func, entity.CleanExtraData(worldId, 'temp.player.index')}
+  _ = {func, entity.CleanExtraData(worldId, 'temp.land.using')}
+  _ = {func, entity.SetExtraData(worldId, 'temp.player.index', {func, maps.new(False)}, True, False)}
+  _ = {func, entity.SetExtraData(worldId, 'temp.land.using', {func, maps.new(False)}, True, False)}
+fi
+
+// 分配在线槽位
+for key, 39:
+
+  if not {func, function.call('data/mapExist', 'temp.player.index', key)}:
+    _ = {func, function.call('data/mapSet', 'temp.player.index', key, playerId)}
+    break
+  fi
+rof
+
+return True

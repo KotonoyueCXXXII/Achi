@@ -1,0 +1,32 @@
+﻿domain = {func, tuple.get(args, 0)}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+domain_ptr = {func, entity.GetExtraData(worldId, domain)}
+
+if {func, object.ref_type(domain_ptr)} == 6:
+
+  if not {func, maps.ptr_exist(domain_ptr, {func, object.ref(0)})}:
+    return False
+  fi
+
+  for i, 63:
+    curKey = i + 1
+    newKey = i
+
+    if {func, maps.ptr_exist(domain_ptr, {func, object.ref(curKey)})}:
+      curTask = {func, maps.ptr_get(domain_ptr, {func, object.ref(curKey)})}
+      _ = {func, maps.ptr_set(domain_ptr, {func, object.ref(newKey)}, curTask)}
+      _ = {func, maps.del(domain_ptr, curKey)}
+    else:
+
+      if {func, maps.ptr_exist(domain_ptr, {func, object.ref(newKey)})}:
+        _ = {func, maps.del(domain_ptr, newKey)}
+      fi
+
+      break
+    fi
+  rof
+
+  return True
+fi
+
+return False

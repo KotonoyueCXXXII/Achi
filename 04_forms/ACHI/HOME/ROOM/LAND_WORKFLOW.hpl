@@ -1,0 +1,54 @@
+﻿// 地皮生命周期流程说明（仅供查看）
+editlongform &(formName) content "
+text = '§l§6▎ 地皮生命周期 §r'
+
+text = text + '\\n'
+text = text + '\\n§l一、获取地皮 §7[LAND/GET.hpl]§r'
+text = text + '\\n  ├── 玩家在表单中选择地皮尺寸'
+text = text + '\\n  ├── FreeLandIndex 查找匹配尺寸的空闲地皮'
+text = text + '\\n  ├── mapSet temp.land.using 绑定玩家'
+text = text + '\\n  ├── tp 传送至地皮中心'
+text = text + '\\n  └── Push queue.land.init 入队初始化（retryCount=15）'
+text = text + '\\n  │'
+text = text + '\\n  ▼'
+
+text = text + '\\n§l二、初始化 §7[land/processInit → initLand]§r'
+text = text + '\\n  ├── 逐段 fill air 清空地皮上方空间'
+text = text + '\\n  ├── fill grass 铺设草皮地面'
+text = text + '\\n  ├── setblock 绿色玻璃 放置角标与中心十字'
+text = text + '\\n  └── Pop 出队，初始化完成'
+text = text + '\\n  │'
+text = text + '\\n  ▼'
+
+text = text + '\\n§l三、正常使用 §7[block_destroy + item_use]§r'
+text = text + '\\n  ├── 管理员 §7(privilege>1)§r → 放行全局'
+text = text + '\\n  ├── 会员 §7(privilege>0)§r   → 仅放行自己地皮内'
+text = text + '\\n  └── 访客 §7(privilege=0)§r  → 全拦截'
+text = text + '\\n  │'
+text = text + '\\n  ▼'
+
+text = text + '\\n§l四、玩家离开 §7[player_leave]§r'
+text = text + '\\n  ├── 备份入队 queue.land.backup 保护地皮数据'
+text = text + '\\n  └── 删除 temp.player.index[slot] 释放槽位'
+text = text + '\\n  │'
+text = text + '\\n  ▼'
+
+text = text + '\\n§l五、备份 §7[land/processBackup]§r'
+text = text + '\\n  ├── state 0：计算备份坐标（squareSpiralFill）→ 创建 tickingarea'
+text = text + '\\n  ├── state 1：等区块加载 → cloneLand 逐段 clone'
+text = text + '\\n  ├── 成功 → 写入 account.saveSizeIndex → 释放 temp.land.using → Pop'
+text = text + '\\n  └── 超时 §7(retry>12)§r → 放弃 → 释放锁 → Pop'
+text = text + '\\n  │'
+text = text + '\\n  ▼'
+
+text = text + '\\n§l六、玩家重新加入 §7[player_join]§r'
+text = text + '\\n  ├── 分配空闲槽位至 temp.player.index'
+text = text + '\\n  ├── 检测 account.saveSizeIndex → 恢复地皮'
+text = text + '\\n  └── 清理孤立数据 CleanExtraData'
+
+return text
+"
+
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM')}
+"

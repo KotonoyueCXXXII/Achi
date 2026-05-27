@@ -1,0 +1,114 @@
+﻿// 表单标题定义
+editlongform &(formName) content "return '点击玩家名称以选择'"
+
+// 添加40个玩家列表按钮槽位
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+
+// 按钮文本：通过 get/SnapshotName 动态获取玩家名称
+editbutton &(formName) 0 text "return {func, function.call('ui/getSnapshotName', 0)}"
+editbutton &(formName) 1 text "return {func, function.call('ui/getSnapshotName', 1)}"
+editbutton &(formName) 2 text "return {func, function.call('ui/getSnapshotName', 2)}"
+editbutton &(formName) 3 text "return {func, function.call('ui/getSnapshotName', 3)}"
+editbutton &(formName) 4 text "return {func, function.call('ui/getSnapshotName', 4)}"
+editbutton &(formName) 5 text "return {func, function.call('ui/getSnapshotName', 5)}"
+editbutton &(formName) 6 text "return {func, function.call('ui/getSnapshotName', 6)}"
+editbutton &(formName) 7 text "return {func, function.call('ui/getSnapshotName', 7)}"
+editbutton &(formName) 8 text "return {func, function.call('ui/getSnapshotName', 8)}"
+editbutton &(formName) 9 text "return {func, function.call('ui/getSnapshotName', 9)}"
+editbutton &(formName) 10 text "return {func, function.call('ui/getSnapshotName', 10)}"
+editbutton &(formName) 11 text "return {func, function.call('ui/getSnapshotName', 11)}"
+editbutton &(formName) 12 text "return {func, function.call('ui/getSnapshotName', 12)}"
+editbutton &(formName) 13 text "return {func, function.call('ui/getSnapshotName', 13)}"
+editbutton &(formName) 14 text "return {func, function.call('ui/getSnapshotName', 14)}"
+editbutton &(formName) 15 text "return {func, function.call('ui/getSnapshotName', 15)}"
+editbutton &(formName) 16 text "return {func, function.call('ui/getSnapshotName', 16)}"
+editbutton &(formName) 17 text "return {func, function.call('ui/getSnapshotName', 17)}"
+editbutton &(formName) 18 text "return {func, function.call('ui/getSnapshotName', 18)}"
+editbutton &(formName) 19 text "return {func, function.call('ui/getSnapshotName', 19)}"
+editbutton &(formName) 20 text "return {func, function.call('ui/getSnapshotName', 20)}"
+editbutton &(formName) 21 text "return {func, function.call('ui/getSnapshotName', 21)}"
+editbutton &(formName) 22 text "return {func, function.call('ui/getSnapshotName', 22)}"
+editbutton &(formName) 23 text "return {func, function.call('ui/getSnapshotName', 23)}"
+editbutton &(formName) 24 text "return {func, function.call('ui/getSnapshotName', 24)}"
+editbutton &(formName) 25 text "return {func, function.call('ui/getSnapshotName', 25)}"
+editbutton &(formName) 26 text "return {func, function.call('ui/getSnapshotName', 26)}"
+editbutton &(formName) 27 text "return {func, function.call('ui/getSnapshotName', 27)}"
+editbutton &(formName) 28 text "return {func, function.call('ui/getSnapshotName', 28)}"
+editbutton &(formName) 29 text "return {func, function.call('ui/getSnapshotName', 29)}"
+editbutton &(formName) 30 text "return {func, function.call('ui/getSnapshotName', 30)}"
+editbutton &(formName) 31 text "return {func, function.call('ui/getSnapshotName', 31)}"
+editbutton &(formName) 32 text "return {func, function.call('ui/getSnapshotName', 32)}"
+editbutton &(formName) 33 text "return {func, function.call('ui/getSnapshotName', 33)}"
+editbutton &(formName) 34 text "return {func, function.call('ui/getSnapshotName', 34)}"
+editbutton &(formName) 35 text "return {func, function.call('ui/getSnapshotName', 35)}"
+editbutton &(formName) 36 text "return {func, function.call('ui/getSnapshotName', 36)}"
+editbutton &(formName) 37 text "return {func, function.call('ui/getSnapshotName', 37)}"
+editbutton &(formName) 38 text "return {func, function.call('ui/getSnapshotName', 38)}"
+editbutton &(formName) 39 text "return {func, function.call('ui/getSnapshotName', 39)}"
+
+// 提交处理：获取玩家上下文并选择目标玩家
+customform onsubmit &(formName) "
+// 获取选中的槽位
+playerId = {func, command.get_executor()}
+targetPlayerIndex = {ref, int, -1}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 存入选择状态
+_ = {func, function.call('data/mapSet', 'temp.menu.settingPlayer', playerIndex, targetPlayerIndex)}
+
+// 验证目标玩家有效性
+err = {func, function.call('ui/validatePlayerSelection', playerIndex)}
+
+if err != 0:
+  _ = {func, function.call('entry/showError', err)}
+  return True
+fi
+
+// 跳转至玩家操作界面
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER_ACTION')}
+_ = {func, function.call('entry/feedback', '已选择目标玩家')}
+return True
+"
+
+// 取消处理：返回主页
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+"

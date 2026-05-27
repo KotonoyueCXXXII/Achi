@@ -1,0 +1,163 @@
+﻿//备份状态机：处理 queue.land.backup 队列任务
+//state 0 = 准备阶段：读取地皮数据，计算备份坐标，创建tickingarea，推进到 state 1
+//state 1 = 执行阶段：等待区块加载，执行克隆，重试超过12次则放弃
+playerId = {func, command.get_executor()}
+
+taskData = {func, function.call('queue/peek', 'queue.land.backup')}
+
+if taskData == -2147483648:
+  return True
+fi
+
+_ = {func, object.finalise(taskData)}
+state = {func, maps.get(taskData, 'state')}
+
+if state == 0:
+  //准备阶段：读取地皮锚点、尺寸，根据玩家UID螺旋分配备份坐标
+  playerUID = {func, maps.get(taskData, 'playerUID')}
+  mode = {func, maps.get(taskData, 'mode')}
+  landIndex = {func, maps.get(taskData, 'landIndex')}
+
+  landData = {func, function.call('data/ptrMapGet', 'data.land.archive', landIndex)}
+  if landData == -2147483648:
+    _ = {func, function.call('queue/pop', 'queue.land.backup')}
+    return True
+  fi
+  _ = {func, object.finalise(landData)}
+  a_x = {func, maps.get(landData, 'anchor_x')}
+  a_z = {func, maps.get(landData, 'anchor_z')}
+  sizeIndex = {func, maps.get(landData, 'sizeIndex')}
+  landSize = 20 + sizeIndex * 10 - 1
+
+  posPtr = {func, function.call('land/squareSpiralFill', playerUID)}
+  _ = {func, object.finalise(posPtr)}
+  backup_x = 1048576 + {func, tuple.get(posPtr, 0)} * 40
+  backup_z = 1048576 + {func, tuple.get(posPtr, 1)} * 40
+
+  if mode == 0:
+    //mode 0 = 保存：从地皮复制到备份区
+    src_x = a_x
+    src_z = a_z
+    dst_x = backup_x
+    dst_z = backup_z
+    debug = '当前备份_UID=' + str(playerUID) + '_Land=' + str(landIndex) + '_Size=' + str(landSize)
+    _ = {func, function.call('entry/debug', debug)}
+  else:
+    //mode 1 = 恢复：从备份区复制到地皮
+    src_x = backup_x
+    src_z = backup_z
+    dst_x = a_x
+    dst_z = a_z
+    debug = '当前恢复_UID=' + str(playerUID) + '_Land=' + str(landIndex) + '_Size=' + str(landSize)
+    _ = {func, function.call('entry/debug', debug)}
+  fi
+
+  //清理旧的tickingarea，然后创建新的（源和目标各一个）
+  cmd = 'tickingarea remove backup_src'
+  _ = {func, world.SetCommand(cmd, playerId)}
+  cmd = 'tickingarea remove backup_dst'
+  _ = {func, world.SetCommand(cmd, playerId)}
+
+  cmd = 'tickingarea add ' + str(src_x) + ' 0 ' + str(src_z) + ' ' + str(src_x + landSize) + ' 0 ' + str(src_z + landSize) + ' backup_src'
+
+  if not {func, object.deref({func, world.SetCommand(cmd, playerId)})}:
+    debug = '备份失败_Tickingarea创建错误'
+    _ = {func, function.call('entry/debug', debug)}
+    return True
+  fi
+
+  cmd = 'tickingarea add ' + str(dst_x) + ' 0 ' + str(dst_z) + ' ' + str(dst_x + landSize) + ' 0 ' + str(dst_z + landSize) + ' backup_dst'
+
+  if not {func, object.deref({func, world.SetCommand(cmd, playerId)})}:
+    debug = '备份失败_Tickingarea创建错误'
+    _ = {func, function.call('entry/debug', debug)}
+    return True
+  fi
+
+  //将坐标和尺寸写入taskMap，推进到执行阶段
+  _ = {func, maps.set(taskData, 'src_x', src_x)}
+  _ = {func, maps.set(taskData, 'src_z', src_z)}
+  _ = {func, maps.set(taskData, 'dst_x', dst_x)}
+  _ = {func, maps.set(taskData, 'dst_z', dst_z)}
+  _ = {func, maps.set(taskData, 'sizeIndex', sizeIndex)}
+  _ = {func, maps.set(taskData, 'state', 1)}
+
+elif state == 1:
+  //执行阶段：等待区块加载后执行clone，失败则重试
+  mode = {func, maps.get(taskData, 'mode')}
+  retry = {func, maps.get(taskData, 'retry')}
+  landIndex = {func, maps.get(taskData, 'landIndex')}
+
+  if retry == 0:
+    retry = 1
+    _ = {func, maps.set(taskData, 'retry', retry)}
+  fi
+
+  if retry > 12:
+    //超时放弃：约12次重试 × 每个tick约5tick = 约3秒
+    debug = '备份超时_已放弃_attempts=' + str(retry)
+    _ = {func, function.call('entry/debug', debug)}
+    cmd = 'tickingarea remove backup_src'
+    _ = {func, world.SetCommand(cmd, playerId)}
+    cmd = 'tickingarea remove backup_dst'
+    _ = {func, world.SetCommand(cmd, playerId)}
+
+    if mode == 0:
+      //释放地皮预留锁
+      playerIndex = {func, function.call('data/mapKeyOf', 'temp.land.using', landIndex)}
+      if playerIndex != -2147483648:
+        _ = {func, function.call('data/mapDel', 'temp.land.using', playerIndex)}
+      fi
+    fi
+
+    _ = {func, function.call('queue/pop', 'queue.land.backup')}
+    return True
+  fi
+
+  src_x = {func, maps.get(taskData, 'src_x')}
+  src_z = {func, maps.get(taskData, 'src_z')}
+  dst_x = {func, maps.get(taskData, 'dst_x')}
+  dst_z = {func, maps.get(taskData, 'dst_z')}
+  sizeIndex = {func, maps.get(taskData, 'sizeIndex')}
+
+  //检查源和目标区块是否都已加载
+
+  if {func, function.call('land/checkChunks', src_x, src_z, sizeIndex)} and {func, function.call('land/checkChunks', dst_x, dst_z, sizeIndex)}:
+    rate = {func, function.call('land/cloneLand', taskData)}
+
+    if rate >= 1:
+      //所有clone分段均成功，清理并出队
+      debug = '备份完成_队列已刷新_attempts=' + str(retry)
+      _ = {func, function.call('entry/debug', debug)}
+      cmd = 'tickingarea remove backup_src'
+      _ = {func, world.SetCommand(cmd, playerId)}
+      cmd = 'tickingarea remove backup_dst'
+      _ = {func, world.SetCommand(cmd, playerId)}
+
+      if mode == 0:
+        ownerId = {func, maps.get(taskData, 'playerId')}
+        playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', ownerId)}
+        if playerData != -2147483648:
+          _ = {func, object.finalise(playerData)}
+          _ = {func, maps.set(playerData, 'saveSizeIndex', sizeIndex)}
+        fi
+        //释放地皮预留锁
+        playerIndex = {func, function.call('data/mapKeyOf', 'temp.land.using', landIndex)}
+        if playerIndex != -2147483648:
+          _ = {func, function.call('data/mapDel', 'temp.land.using', playerIndex)}
+        fi
+      fi
+
+      _ = {func, function.call('queue/pop', 'queue.land.backup')}
+      return True
+    fi
+
+    //clone部分成功，重试计数+1
+    debug = '备份重试_attempts=' + str(retry + 1)
+    _ = {func, function.call('entry/debug', debug)}
+    _ = {func, maps.set(taskData, 'retry', retry + 1)}
+  fi
+
+fi
+
+return True

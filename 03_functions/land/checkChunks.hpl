@@ -1,0 +1,26 @@
+﻿anchor_x = {func, tuple.get(args, 0)}
+anchor_z = {func, tuple.get(args, 1)}
+sizeIndex = {func, tuple.get(args, 2)}
+landSize = 20 + sizeIndex * 10 - 1
+dimId = {func, command.get_dimension()}
+ch_min_x = {func, math.floordiv(anchor_x, 16)}
+ch_max_x = {func, math.floordiv(anchor_x + landSize, 16)}
+ch_min_z = {func, math.floordiv(anchor_z, 16)}
+ch_max_z = {func, math.floordiv(anchor_z + landSize, 16)}
+count_x = ch_max_x - ch_min_x + 1
+count_z = ch_max_z - ch_min_z + 1
+
+for ix, count_x:
+  cx = ch_min_x + ix
+
+  for iz, count_z:
+    cz = ch_min_z + iz
+    pos = {func, tuple.new(cx * 16, 0, cz * 16)}
+
+    if not {func, object.deref({func, world.CheckChunkState(dimId, pos)})}:
+      return False
+    fi
+  rof
+rof
+
+return True

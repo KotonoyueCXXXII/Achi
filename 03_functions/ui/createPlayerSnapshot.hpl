@@ -1,0 +1,8 @@
+﻿playerId = {func, tuple.get(args, 0)}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+worldId = {func, object.deref({func, world.GetLevelId()})}
+playerIndexData = {func, entity.GetExtraData(worldId, 'temp.player.index')}
+_ = {func, function.call('data/ptrMapSet', 'temp.menu.playerIndexSnapshot', playerIndex, playerIndexData)}
+return True
+

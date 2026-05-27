@@ -1,0 +1,82 @@
+// 输入框：数据域名称
+editmodalform &(formName) append input
+editinput &(formName) 0 text "return '输入要删除的数据的域名'"
+editinput &(formName) 0 placeholder "return '例如: data.player.archive'"
+editinput &(formName) 0 tooltip "return '输入要清除的 ExtraData 数据域名称，清除操作不可撤销'"
+
+// 开关：调试广播 — 开启时结果通过 entry/debug 向全服广播，关闭时仅 feedback 当前玩家
+editmodalform &(formName) append toggle
+edittoggle &(formName) 1 text "return '调试广播'"
+edittoggle &(formName) 1 default "
+playerId = {func, command.get_executor()}
+hasTag = {func, entity.EntityHasTag(playerId, 'isDebugMode')}
+return {func, object.deref(hasTag)}
+"
+edittoggle &(formName) 1 tooltip "return '开启后系统调试信息将向你广播（需 isDebugMode 标签），关闭则不再接收'"
+
+// 模拟using创建：以当前位置为锚点创建sizeIndex=2的地皮，并以地皮索引为槽位键写入using
+// elif {ref, bool, 13}:
+//   posPtr = {func, entity.GetFootPos(playerId)}
+//   pos_x = int({func, tuple.get(posPtr, 0)})
+//   pos_y = int({func, tuple.get(posPtr, 1)}) - 1
+//   pos_z = int({func, tuple.get(posPtr, 2)})
+//   archivePtr = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+//   landIndex = {func, maps.length(archivePtr)}
+//   landMap = {func, maps.new()}
+//   _ = {func, maps.set(landMap, 'anchor_x', pos_x)}
+//   _ = {func, maps.set(landMap, 'anchor_y', pos_y)}
+//   _ = {func, maps.set(landMap, 'anchor_z', pos_z)}
+//   _ = {func, maps.set(landMap, 'sizeIndex', 2)}
+//   _ = {func, function.call('data/ptrMapSet', 'data.land.archive', landIndex, landMap)}
+//   _ = {func, function.call('data/mapSet', 'temp.land.using', landIndex, landIndex)}
+//   _ = {func, function.call('data/mapSet', 'temp.player.index', landIndex, landIndex)}
+//   fakeAccount = {func, maps.new()}
+//   _ = {func, maps.set(fakeAccount, 'uid', landIndex)}
+//   _ = {func, maps.set(fakeAccount, 'privilegeLevel', 0)}
+//   _ = {func, maps.set(fakeAccount, 'saveSizeIndex', 2)}
+//   _ = {func, function.call('data/ptrMapSet', 'data.player.archive', landIndex, fakeAccount)}
+//   msg = '已模拟创建地皮 ' + str(landIndex) + ' 及虚拟账户'
+//   _ = {func, function.call('entry/feedback', msg)}
+//   _ = {func, function.call('entry/navigate', '&(formName)')}
+// fi
+
+// 提交处理
+customform onsubmit &(formName) "
+playerId = {func, command.get_executor()}
+worldId = {func, object.deref({func, world.GetLevelId()})}
+
+// 元素 0 — 输入框：清除指定数据域
+domainName = {ref, str, 0}
+
+if domainName != '':
+  domainPtr = {func, entity.GetExtraData(worldId, domainName)}
+
+  if {func, object.ref_type(domainPtr)} != 6:
+    _ = {func, function.call('entry/showError', 18)}
+    return True
+  fi
+
+  _ = {func, entity.CleanExtraData(worldId, domainName)}
+  msg = '已清除数据域: ' + domainName
+  _ = {func, function.call('entry/feedback', msg)}
+fi
+
+// 元素 1 — 开关：同步调试标签
+useDebug = {ref, bool, 1}
+
+if useDebug:
+  _ = {func, entity.AddEntityTag(playerId, 'isDebugMode')}
+  _ = {func, function.call('entry/feedback', '已开启调试模式')}
+else:
+  _ = {func, entity.RemoveEntityTag(playerId, 'isDebugMode')}
+  _ = {func, function.call('entry/feedback', '已关闭调试模式')}
+fi
+
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM')}
+return True
+"
+
+// 取消处理：返回系统设置
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM')}
+"

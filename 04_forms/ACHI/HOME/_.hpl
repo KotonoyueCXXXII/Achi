@@ -1,0 +1,57 @@
+﻿editlongform &(formName) content "return 'Eighth World | Co Server.'"
+editlongform &(formName) append button
+editbutton &(formName) 0 text "return '地点传送'"
+editlongform &(formName) append button
+editbutton &(formName) 1 text "return '地皮操作'"
+editlongform &(formName) append button
+editbutton &(formName) 2 text "return '玩家交互'"
+editlongform &(formName) append button
+editbutton &(formName) 3 text "return '实用工具'"
+editlongform &(formName) append button
+editbutton &(formName) 4 text "return '关于房间'"
+editlongform &(formName) append button
+editbutton &(formName) 5 text "return '关于系统'"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+
+// 地点传送
+
+if {ref, bool, 0}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP')}
+// 地皮操作
+elif {ref, bool, 1}:
+  playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+  if playerData != -2147483648:
+
+    if {func, maps.exist(playerData, 'saveSizeIndex')}:
+      playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+      if not {func, function.call('data/mapExist', 'temp.land.using', playerIndex)}:
+        _ = {func, function.call('entry/navigate', 'ACHI_INFO_RESTORE')}
+        return True
+      fi
+    fi
+
+    _ = {func, object.finalise(playerData)}
+  fi
+
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_LAND')}
+// 玩家交互
+elif {ref, bool, 2}:
+  _ = {func, function.call('ui/createPlayerSnapshot', playerId)}
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER')}
+// 实用工具
+elif {ref, bool, 3}:
+
+// 关于房间
+elif {ref, bool, 4}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_ROOM')}
+// 关于系统
+elif {ref, bool, 5}:
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_SYSTEM')}
+fi
+
+"

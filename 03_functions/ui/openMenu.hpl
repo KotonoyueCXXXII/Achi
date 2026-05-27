@@ -1,0 +1,19 @@
+﻿playerId = {func, command.get_executor()}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+if playerData != -2147483648:
+
+  if {func, maps.get(playerData, 'privilegeLevel')} > 0:
+    _ = {func, function.call('entry/navigate', 'ACHI_HOME')}
+  else:
+    _ = {func, function.call('entry/navigate', 'ACHI_INFO_AGREEMENT')}
+  fi
+
+  _ = {func, object.finalise(playerData)}
+else:
+  _ = {func, function.call('entry/navigate', 'ACHI_INFO_AGREEMENT')}
+fi
+
+cmd = 'tp ~ ~ ~ ~ 0'
+_ = {func, world.SetCommand(cmd, playerId)}
+return True

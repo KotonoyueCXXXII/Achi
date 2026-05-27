@@ -1,0 +1,142 @@
+﻿editlongform &(formName) content "
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+anchorSlot = {func, function.call('data/mapGet', 'temp.menu.anchorSlot', playerIndex)}
+return '当前正在对第_' + str(anchorSlot) + '_号槽位进行操作'
+"
+editlongform &(formName) append button
+editlongform &(formName) append button
+editlongform &(formName) append button
+editbutton &(formName) 0 text "return '写入坐标'"
+editbutton &(formName) 1 text "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+anchorSlot = {func, function.call('data/mapGet', 'temp.menu.anchorSlot', playerIndex)}
+
+// 获取账户数据
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+// 到达此菜单即已注册账户，故不检查
+_ = {func, object.finalise(playerData)}
+
+// 检查锚点状态
+
+if not {func, maps.exist(playerData, 'anchors')}:
+  return '读取坐标\\n(请先写入)'
+fi
+
+anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+
+if not {func, maps.ptr_exist(anchorsMap, {func, object.ref(anchorSlot)})}:
+  return '读取坐标\\n(请先写入)'
+fi
+
+return '读取坐标'
+"
+editbutton &(formName) 2 text "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+anchorSlot = {func, function.call('data/mapGet', 'temp.menu.anchorSlot', playerIndex)}
+
+// 获取账户数据
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+// 到达此菜单即已注册账户，故不检查
+_ = {func, object.finalise(playerData)}
+
+// 检查锚点状态
+
+if not {func, maps.exist(playerData, 'anchors')}:
+  return '删除锚点\\n(请先写入)'
+fi
+
+anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+
+if not {func, maps.ptr_exist(anchorsMap, {func, object.ref(anchorSlot)})}:
+  return '删除锚点\\n(请先写入)'
+fi
+
+return '删除锚点'
+"
+
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+anchorSlot = {func, function.call('data/mapGet', 'temp.menu.anchorSlot', playerIndex)}
+
+// 获取账户及锚点数据
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+if playerData == -2147483648:
+  _ = {func, function.call('entry/showError', 9)}
+  return True
+fi
+
+_ = {func, object.finalise(playerData)}
+posTuple = -2147483648
+
+if {func, maps.exist(playerData, 'anchors')}:
+  anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+
+  if {func, maps.ptr_exist(anchorsMap, {func, object.ref(anchorSlot)})}:
+    posTuple = {func, maps.ptr_get(anchorsMap, {func, object.ref(anchorSlot)})}
+  fi
+fi
+
+// 写入坐标
+
+if {ref, bool, 0}:
+  posPtr = {func, entity.GetFootPos(playerId)}
+  px = int({func, math.floor({func, tuple.get(posPtr, 0)})})
+  py = int({func, math.floor({func, tuple.get(posPtr, 1)})})
+  pz = int({func, math.floor({func, tuple.get(posPtr, 2)})})
+
+  if {func, maps.exist(playerData, 'anchors')}:
+    anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+  else:
+    anchorsMap = {func, maps.new(False)}
+  fi
+
+  posTuple = {func, tuple.new(px, py, pz)}
+  _ = {func, maps.ptr_set(anchorsMap, {func, object.ref(anchorSlot)}, posTuple)}
+  _ = {func, maps.ptr_set(playerData, {func, object.ref('anchors')}, anchorsMap)}
+  _ = {func, function.call('entry/feedback', '锚点设置成功')}
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_ANCHOR')}
+  return True
+
+// 读取坐标
+elif {ref, bool, 1}:
+
+  if posTuple == -2147483648:
+    _ = {func, function.call('entry/showError', 12)}
+    return True
+  fi
+
+  _ = {func, entity.SetPos(playerId, posTuple)}
+  msg = '已传送至锚点 ' + str(anchorSlot)
+  _ = {func, function.call('entry/feedback', msg)}
+  return True
+
+// 删除锚点
+elif {ref, bool, 2}:
+
+  if posTuple == -2147483648:
+    _ = {func, function.call('entry/showError', 12)}
+    return True
+  fi
+
+  _ = {func, maps.ptr_del(anchorsMap, {func, object.ref(anchorSlot)})}
+  msg = '已删除锚点 ' + str(anchorSlot)
+  _ = {func, function.call('entry/feedback', msg)}
+  _ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_ANCHOR')}
+  return True
+fi
+
+return True
+"
+
+customform oncancel &(formName) "
+// 返回锚点列表
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_TP_ANCHOR')}
+"

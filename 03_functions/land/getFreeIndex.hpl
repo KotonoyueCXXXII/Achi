@@ -1,0 +1,25 @@
+﻿submitLandSizeIndex = {func, tuple.get(args, 0)}
+
+worldId = {func, object.deref({func, world.GetLevelId()})}
+
+usingData = {func, entity.GetExtraData(worldId, 'temp.land.using')}
+usingValuesSlices = {func, maps.values(usingData)}
+
+landData = {func, entity.GetExtraData(worldId, 'data.land.archive')}
+totalLand = {func, maps.length(landData)}
+
+for landIndex, totalLand:
+  landData_i = {func, maps.ptr_get(landData, {func, object.ref(landIndex)})}
+
+  if {func, maps.get(landData_i, 'sizeIndex')} == submitLandSizeIndex:
+
+    if not {func, slices.in(usingValuesSlices, landIndex)}:
+      return landIndex
+    fi
+  fi
+rof
+
+return int(-2147483648)
+
+
+

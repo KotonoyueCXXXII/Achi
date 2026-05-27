@@ -1,0 +1,43 @@
+﻿// 表单界面定义：私信输入弹窗
+editmodalform &(formName) content "return '输入要发送的私信内容'"
+editmodalform &(formName) append input
+editinput &(formName) 0 text "return '消息内容'"
+editmodalform &(formName) button1 "return '发送'"
+editmodalform &(formName) button2 "return '取消'"
+
+// 提交处理：获取玩家上下文并发送私信
+customform onsubmit &(formName) "
+// 获取玩家上下文
+playerId = {func, command.get_executor()}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+// 获取消息内容
+message = {ref, str, 0}
+
+// 获取发送者名称
+senderName = {func, object.deref({func, entity.GetName(playerId)})}
+
+// 验证目标玩家有效性
+err = {func, function.call('ui/validatePlayerSelection', playerIndex)}
+
+if err != 0:
+  _ = {func, function.call('entry/showError', err)}
+  return True
+fi
+
+// 获取目标玩家
+settingPlayerIndex = {func, function.call('data/mapGet', 'temp.menu.settingPlayer', playerIndex)}
+targetId = {func, function.call('data/mapGet', 'temp.player.index', settingPlayerIndex)}
+targetName = {func, object.deref({func, entity.GetName(targetId)})}
+
+// 发送私信
+cmd = 'tellraw \"' + targetName + '\" {\"rawtext\":[{\"text\":\"§7私聊 | §f' + senderName + ' §7> §f' + message + '\"}]}'
+_ = {func, world.SetCommand(cmd, playerId)}
+
+return True
+"
+
+// 取消处理：返回玩家操作界面
+customform oncancel &(formName) "
+_ = {func, function.call('entry/navigate', 'ACHI_HOME_PLAYER_ACTION')}
+"

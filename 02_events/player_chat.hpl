@@ -1,0 +1,36 @@
+﻿// 获取聊天事件参数
+playerId = {func, maps.get(args, 'playerId')}
+message = {func, maps.get(args, 'message')}
+username = {func, maps.get(args, 'username')}
+
+// 取消原始聊天事件，改用 tellraw 重发
+_ = {func, maps.set(args, 'cancel', True)}
+
+// 获取玩家权限等级并确定前缀
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+if playerData != -2147483648:
+  privilege = {func, maps.get(playerData, 'privilegeLevel')}
+
+  // 确定权限前缀
+  if privilege == 3:
+    prefix = '管理'
+  elif privilege == 2:
+    prefix = '会员'
+  elif privilege == 1:
+    prefix = '成员'
+  else:
+    prefix = '访客'
+  fi
+
+  _ = {func, object.finalise(playerData)}
+
+else:
+  prefix = '访客'
+fi
+
+// 拼接格式化消息并通过 tellraw 广播
+cmd = 'tellraw @a {\"rawtext\":[{\"text\":\"§7' + prefix + ' | §f' + username + ' §7> §f' + message + '\"}]}'
+_ = {func, world.SetCommand(cmd, playerId)}
+
+return True

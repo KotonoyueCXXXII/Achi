@@ -1,0 +1,41 @@
+﻿playerId = {func, maps.get(args, 'playerId')}
+pos_x = {func, maps.get(args, 'x')}
+pos_y = {func, maps.get(args, 'y')}
+pos_z = {func, maps.get(args, 'z')}
+playerIndex = {func, function.call('data/mapKeyOf', 'temp.player.index', playerId)}
+
+//验证方块破坏是否合法
+_ = {func, maps.set(args, 'cancel', True)}
+playerData = {func, function.call('data/ptrMapGet', 'data.player.archive', playerId)}
+
+// 账户存在
+if playerData != -2147483648:
+  playerPrivilegeLevel = {func, maps.get(playerData, 'privilegeLevel')}
+
+  // 会员及以上，直接放行
+  if playerPrivilegeLevel > 1:
+    _ = {func, maps.set(args, 'cancel', False)}
+  // 成员，需在地皮范围内
+  elif playerPrivilegeLevel > 0:
+    usingLandIndex = {func, function.call('data/mapGet', 'temp.land.using', playerIndex)}
+
+    // 在使用中的地皮
+    if usingLandIndex != -2147483648:
+      landData = {func, function.call('data/ptrMapGet', 'data.land.archive',  usingLandIndex)}
+      usingLandSizeIndex = {func, maps.get(landData, 'sizeIndex')}
+      usingLandPos_x = {func, maps.get(landData, 'anchor_x')}
+      usingLandPos_y = {func, maps.get(landData, 'anchor_y')}
+      usingLandPos_z = {func, maps.get(landData, 'anchor_z')}
+      usingLandSize = 20 + usingLandSizeIndex * 10 - 1
+
+      // 坐标在地皮范围内
+      if pos_x - usingLandPos_x >= 0 and pos_x - usingLandPos_x <= usingLandSize and pos_z - usingLandPos_z >= 0 and pos_z - usingLandPos_z <= usingLandSize:
+        _ = {func, maps.set(args, 'cancel', False)}
+      fi
+      _ = {func, object.finalise(landData)}
+    fi
+  fi
+  _ = {func, object.finalise(playerData)}
+fi
+
+return True
