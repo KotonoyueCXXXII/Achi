@@ -1,13 +1,15 @@
-﻿# Achi 项目编码规范
+# Achi 项目编码规范
 
 本文档定义**如何编写代码**：格式、命名、数据存取模式、控制流风格、约定。只讲规则和模式，不列举系统参考数据。
 
-- 项目结构、构建管线、运行时架构 → [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- ExtraData 域结构、字段详情、错误码 → [ExtraData-Schema.md](docs/ExtraData-Schema.md)
-- HPL 语言语法、指针系统 → [HPL-参考.md](docs/HPL-参考.md)
+- 项目结构、构建管线、编译规则 → [构建管线.md](docs/构建管线.md)
+- ExtraData 域结构、字段详情、错误码、自建函数列表 → [数据结构参考.md](docs/数据结构参考.md)
+- HPL 语言学习 → [HPL-参考.md](docs/HPL-参考.md)
+- 复杂类型与指针操作 → [复杂类型操作指南.md](docs/复杂类型操作指南.md)
 - HPL API 函数签名 → [HPL-API-参考.md](docs/HPL-API-参考.md)
+- **HPL 常见错误与反例** → [HPL-GOTCHAS.md](docs/HPL-GOTCHAS.md)（写代码前先读这个）
 
-修改后必须运行 `uv run python build.py`。构建管线流程及各目录编译规则见 [ARCHITECTURE.md#构建管线](ARCHITECTURE.md#构建管线)。
+修改后必须运行 `uv run python build.py`。构建管线流程及各目录编译规则见 [构建管线.md](docs/构建管线.md)。
 
 ### 章节
 
@@ -16,8 +18,6 @@
 | [源码格式](#format) | 段落分隔、控制分隔、逻辑分隔、多行文本、多行指令、函数头部注释 |
 | [数据存取](#data) | 指针模型、-2147483648、域级别/对象级别存取、变量命名 |
 | [控制流](#control) | 事件回调、自定义函数、表单提交范式、通用规则 |
-| [入口速查](#ref) | entry/navigate、entry/showError、entry/feedback、entry/debug、ref 取值 |
-| [交叉引用](#xref) | 各文档职责与链接 |
 
 <a id="format"></a>
 ## 源码格式
@@ -97,27 +97,19 @@ return text
 
 单行字符串（如 `editbutton X 0 text "return 'xxx'"`）不做多行要求。
 
-**多行指令**：连续多条同类型命令调用（`world.SetCommand`、`world.SpawnEntity` 等）视为一个整体，内部不留空行，前后与上下文用空行隔开：
+**多行指令**：连续多条同类型命令视为整体，内部不留空行，前后空行隔开：
 
 ```hpl
-// 构建草皮与角标命令
-grassCmd = 'fill ... grass'
-glassCmd1 = 'setblock ... green_stained_glass'
-glassCmd2 = 'setblock ... green_stained_glass'
-glassCmd3 = 'setblock ... green_stained_glass'
-glassCmd4 = 'setblock ... green_stained_glass'
+// 构建命令
+cmd1 = 'fill ... grass'
+cmd2 = 'setblock ... green_stained_glass'
 
-// 执行草皮与角标命令
-_ = {func, world.SetCommand(grassCmd, playerId)}
-_ = {func, world.SetCommand(glassCmd1, playerId)}
-_ = {func, world.SetCommand(glassCmd2, playerId)}
-_ = {func, world.SetCommand(glassCmd3, playerId)}
-_ = {func, world.SetCommand(glassCmd4, playerId)}
+// 执行命令
+_ = {func, world.SetCommand(cmd1, playerId)}
+_ = {func, world.SetCommand(cmd2, playerId)}
 
 return True
 ```
-
-与"逻辑分隔"中的命令序列一致，但强调**同类型指令的块状排列**。
 
 **函数头部注释**：每个 `03_functions/` 下的函数文件以 `//` 注释开头，简述职责与核心逻辑：
 
@@ -140,28 +132,15 @@ anchor_x = {func, tuple.get(args, 0)}
 
 ### 指针即句柄
 
-HPL 内部维护一个 `_objects` 字典：`{int句柄 → 实际对象}`。`maps.new`、`tuple.new` 等返回的"指针"本质就是一个 int 句柄。操作复杂类型只能通过 `maps.*`/`tuple.*` 等函数间接进行。
+复杂类型（map/tuple/slice/set）通过 int 句柄间接操作，存入 map 必须用 `ptr_set`，读取用 `ptr_get`。详细指针生命周期见 [复杂类型操作指南.md](docs/复杂类型操作指南.md)，误用后果见 [HPL-GOTCHAS.md](docs/HPL-GOTCHAS.md)。
 
-函数返回时，其内部创建的所有指针自动释放（`del _objects[ptr]`）。对象若已被 ExtraData 存入或经 `ptr_set` 写入父 map，则解引用后由目标持有，函数返回后指针释放但对象仍存在。详见 [HPL-参考.md#指针生命周期](docs/HPL-参考.md#指针生命周期)。
-
-**复杂类型：**
-
-| 类型 | 创建 | 操作模块 | API |
-|---|---|---|---|
-| map | `maps.new(False)` | `maps.get` / `set` / `exist` / `del` / `ptr_get` / `ptr_set` / `ptr_exist` / `ptr_del` | [maps](docs/HPL-API-参考.md#maps) |
-| tuple | `tuple.new(...)` | `tuple.get` / `set` / `len` | [tuple](docs/HPL-API-参考.md#tuple) |
-| slice | `slices.new()` | `slices.append` / `ptr_get` / `set` / `len` / `in` | [slices](docs/HPL-API-参考.md#slices) |
-| set | `set.new()` | `set.add` / `in` / `len` | [set](docs/HPL-API-参考.md#set) |
-
-四个均为指针类型——存入 map 必须用 `ptr_set`，读取用 `ptr_get`。
-
-基于此模型，存取分为两层：**域级别**（`worldData/*`，操作 ExtraData 顶层域）、**对象级别**（`maps.*` / `tuple.*` / `slices.*` / `set.*`，操作已获取到的复杂类型）。
+存取分为两层：**域级别**（操作 ExtraData 顶层域）和 **对象级别**（操作已获取到的复杂类型）。
 
 ### 域级别存取
 
-域遵循三段式命名 `类型.模块.属性`，完整结构见 [ExtraData-Schema.md](docs/ExtraData-Schema.md)。
+域遵循三段式命名 `类型.模块.属性`，完整结构见 [数据结构参考.md](docs/数据结构参考.md)。
 
-所有 `worldData/*` 和 `queue/*` 为项目自定义函数，key 不存在时统一返回 `-2147483648`，调用方直接判断返回值即可。完整函数签名表见 [ExtraData-Schema.md#访问函数](ExtraData-Schema.md#访问函数)。
+所有 `worldData/*` 和 `queue/*` 为项目自定义函数，key 不存在时统一返回 `-2147483648`，调用方直接判断返回值即可。完整函数签名表见 [数据结构参考.md#函数速查](docs/数据结构参考.md#函数速查)。
 
 **域的两层与三层结构：**
 
@@ -175,11 +154,11 @@ HPL 内部维护一个 `_objects` 字典：`{int句柄 → 实际对象}`。`map
 
   如 `data.player.archive → playerId → {uid, privilegeLevel, ...}`。
 
-完整域列表见 [ExtraData-Schema.md](docs/ExtraData-Schema.md)。
+完整域列表见 [数据结构参考.md](docs/数据结构参考.md)。
 
 **null 检查与 finalise：**
 
-`finalise(-2147483648)` 会崩溃，因此 `ptr_mapGet` 返回 `-2147483648` 时不能调 `finalise`。
+`ptrMapGet` 返回 `-2147483648` 时不能调 `finalise`（会崩溃，见 [HPL-GOTCHAS.md#4-finalise-2147483648--崩溃](docs/HPL-GOTCHAS.md#4-finalise-2147483648--崩溃)）。
 
 必须检查（key 不保证存在）：
 ```hpl
@@ -227,44 +206,18 @@ fi
 
 ### 对象级别存取
 
-修改**复杂类型**字段必须区分**值类型**和**指针类型**，错用导致悬垂指针崩溃。操作速查见 [HPL-API-参考.md#maps](docs/HPL-API-参考.md#maps)，以下为核心规则：
+存复杂类型必须用 `ptr_set`（非 `set`），读取用 `ptr_get`。嵌套写入须先填充子 map 再存入父 map（`ptr_get` 是快照，顺序反了会丢数据）。完整规则见 [复杂类型操作指南.md](docs/复杂类型操作指南.md)。
 
-- `maps.set` 把指针句柄（int）当普通整数存入，不解引用。函数返回时句柄被释放，存储的整数变悬垂引用→后续读取崩溃。
-- 存 map、tuple 等复杂类型**必须**用 `maps.ptr_set`，读回**必须**用 `maps.ptr_get`。配套：`ptr_set` 存 → `ptr_get` 读 → `ptr_exist` 查 → `ptr_del` 删。
-- `maps.get` 对不存在的 key **直接崩溃**，必须先用 `maps.exist` 检查。
-- `maps.ptr_get` 对不存在的 key 返回 `None`，也需 `maps.ptr_exist` 守卫。
-- `data/ptrMapGet` 内部调用了 `object.pin()`，返回的指针**必须** `object.finalise` 释放；`maps.ptr_get` / `maps.new` / `tuple.new` 等不 pin，函数返回时自动释放，**不需要** `finalise`。
-
-**示例：嵌套 map 存取（个人锚点）**
-
-写入——先填充子 map，再 `ptr_set` 存入父 map（顺序不能反）：
-
-```
-// 获取或创建锚点 map
-if {func, maps.exist(playerData, 'anchors')}:
-  anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
-else:
-  anchorsMap = {func, maps.new(False)}
-fi
-
-posTuple = {func, tuple.new(px, py, pz)}
-
-// 先写子 map，再存入父 map
+```hpl
+// 写入嵌套 map
+anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
 _ = {func, maps.ptr_set(anchorsMap, {func, object.ref(slot)}, posTuple)}
 _ = {func, maps.ptr_set(playerData, {func, object.ref('anchors')}, anchorsMap)}
-```
 
-读取——`ptr_exist` 守卫 + `ptr_get`：
-
-```
-if {func, maps.exist(playerData, 'anchors')}:
-  anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
-
-  if {func, maps.ptr_exist(anchorsMap, {func, object.ref(slot)})}:
+// 读取嵌套 map
+anchorsMap = {func, maps.ptr_get(playerData, {func, object.ref('anchors')})}
+if {func, object.ref_type(anchorsMap)} == 6:
     posTuple = {func, maps.ptr_get(anchorsMap, {func, object.ref(slot)})}
-    // 使用 posTuple
-  fi
-
 fi
 ```
 
@@ -373,7 +326,27 @@ _ = {func, function.call('entry/navigate', 'ACHI_HOME')}
 - **账户检查**：保证存在 → 跳过并注释；否则 `== -2147483648` → `showError` → `return True`
 - **覆盖**：按钮 0..N-1 全部覆盖，空分支保留 `elif` 骨架，纯导航一行 `entry/navigate`
 - **oncancel**：一行返回上级，叶子表单可省
-- **模态表单**：无按钮分发，跳过阶段二，直接操作后 `return True`
+
+### 模态表单（`04_forms/` modal）
+
+与长表单的本质区别：**无按钮列表，onsubmit 是线性流程**——读取控件值 → 验证 → 执行 → `return True`，不写 `if/elif` 分支。
+
+**控件与 `{ref, type, N}` 对应关系：**
+
+| 控件 | ref 类型 | 示例 |
+|---|---|---|
+| toggle（开关） | `{ref, bool, N}` | `allowTP = {ref, bool, 1}` |
+| input（输入框） | `{ref, str, N}` | `message = {ref, str, 0}` |
+| dropdown（下拉） | `{ref, int, N}` | `newLevel = {ref, int, 0}` |
+| slider（滑块） | `{ref, float, N}` | |
+| stepslider（步进滑块） | `{ref, int, N}` | |
+
+**关键规则：**
+
+- **索引 N 包括所有元素**：`append label` 也消耗索引。若 label 在索引 0，第一个交互控件就是索引 1
+- **oncancel 必须存在**：与长表单不同，模态表单必须定义 oncancel 返回父表单
+- **onsubmit 不一定要导航离开**：可重复操作（切换开关）留在表单，一次性操作（清除数据）才导航。项目中 3/4 的模态表单提交后留在原地
+- 完整易错点见 [HPL-GOTCHAS.md#模态表单modal-form-易错点](docs/HPL-GOTCHAS.md#模态表单modal-form-易错点)
 
 **其他表单函数体：** 除 onsubmit/oncancel 外，所有 `<*Code: string>` 参数也是 HPL 函数体，在表单展示者上下文中执行（`command.get_executor()` 返回打开表单的玩家）。数据存取规则与 onsubmit 一致——按需获取上下文，遵循同样的 null 检查和 finalise 规则。差异仅在于：无按钮分发、无三段结构，返回值是表单需要的实际数据（string / bool / int / float）而非 `True`。
 
@@ -420,36 +393,15 @@ _ = {func, function.call('entry/navigate', 'ACHI_HOME')}
 
 **遍历方式**。有数据时用 `maps.length` + `maps.items` + `slices.ptr_get`。检查存在用 `slices.in`。反查 key 用 `data/mapKeyOf`。避免 `for i, 40` 暴力扫描。
 
+**删除字段**。基本类型用 `maps.del`/`data/mapDel`，指针类型用 `maps.ptr_del`/`data/ptrMapDel`。禁止 `maps.set(ptr, key, -2147483648)` 伪装删除（见 [HPL-GOTCHAS.md#8](docs/HPL-GOTCHAS.md#8-用-mapssetptr-key--2147483648-伪装删除)）。
+
+**跳过检查注释**。前置条件保证存在而跳过 null 检查时，必须用 `//由于...` 注释说明理由。
+
+**哨兵值使用**。`int(-2147483648)` 仅用于 `return` 语句，函数体内用裸值（见 [HPL-GOTCHAS.md#9](docs/HPL-GOTCHAS.md#9-return--2147483648-不写-int-包装)）。
+
 **坐标命名**。统一蛇形命名：`anchor_x`, `anchor_y`, `anchor_z`（非 `anchorX`）。
 
 **其他**。`execute` 命令优于 HPL 玩家循环；含 `/` 的函数名必须双引号包裹（`customfunction add "data/mapGet" "..."`）；使用未知 HPL 函数前先查本地 API 文档或 [网易开发手册](https://mc.163.com/dev/mcmanual/mc-dev/mcdocs/1-ModAPI/接口/世界/索引.html)。
 
-<a id="ref"></a>
-## 入口速查
+完整错误码表见 [数据结构参考.md#错误码](docs/数据结构参考.md#错误码)，完整函数目录见 [数据结构参考.md#函数速查](docs/数据结构参考.md#函数速查)。
 
-| 入口 | 用途 | 说明 |
-|---|---|---|
-| `entry/navigate(formName)` | 跳转到指定表单 | 内部获取 playerId，调用方不传 |
-| `entry/showError(code)` | 弹出错误提示 | 写入 errorCode 并导航至 ACHI_INFO_ERROR |
-| `entry/feedback(message)` | 向当前玩家发 tellraw | 格式 `§7系统 \| ACHI > §f<message>` |
-| `entry/debug(message)` | 向所有玩家广播 tellraw | 仅临时调试用 |
-| `{ref, bool, N}` | 长表单按钮分发 | 详见 [HPL-参考.md#ref-bool-n-按钮分发](docs/HPL-参考.md#ref-bool-n-按钮分发) |
-| `{ref, str/int, N}` | 模态表单输入取值 | 详见 [HPL-参考.md#ref-strint-n-输入控件取值](docs/HPL-参考.md#ref-strint-n-输入控件取值) |
-
-完整错误码表见 [ExtraData-Schema.md#11-tempmenuerrorcode--错误码](ExtraData-Schema.md#11-tempmenuerrorcode--错误码)，完整函数目录见 [ARCHITECTURE.md#关键函数目录](docs/ARCHITECTURE.md#关键函数目录)。
-
-<a id="xref"></a>
-## 交叉引用
-
-| 需要了解... | 查阅文档 |
-|---|---|
-| 某个域的 key/value 类型和字段结构 | [ExtraData-Schema.md](docs/ExtraData-Schema.md) |
-| 错误码含义 | [ExtraData-Schema.md#11-tempmenuerrorcode--错误码](ExtraData-Schema.md#11-tempmenuerrorcode--错误码) |
-| 构建命令和编译规则 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| 如何新增事件/表单/函数 | [ARCHITECTURE.md#注册机制](ARCHITECTURE.md#注册机制) |
-| HPL 函数调用语法和指针生命周期 | [HPL-参考.md](docs/HPL-参考.md) |
-| 某个 API 的参数和返回值 | [HPL-API-参考.md](docs/HPL-API-参考.md) |
-| 项目自建函数调用 | 本文档 [入口速查](#ref) |
-| 指针 finalise 规则 | 本文档 [数据存取](#data) |
-| 变量命名约定 | 本文档 [数据存取](#data) |
-| 控制流模式选择（嵌套 vs 早退） | 本文档 [控制流](#control) |

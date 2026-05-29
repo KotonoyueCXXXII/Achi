@@ -12,4 +12,5 @@ fi
 domain_ptr = {func, maps.new()}
 _ = {func, entity.SetExtraData(worldId, domain, domain_ptr, True, False)}
 _ = {func, maps.ptr_set(domain_ptr, {func, object.ref(key)}, value_ptr)}
+
 return True

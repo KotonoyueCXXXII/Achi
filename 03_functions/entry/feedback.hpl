@@ -4,4 +4,5 @@ playerId = {func, command.get_executor()}
 
 cmd = 'tellraw @s {\"rawtext\":[{\"text\":\"§7系统 | ACHI > §f' + message + '\"}]}'
 _ = {func, world.SetCommand(cmd, playerId)}
+
 return True

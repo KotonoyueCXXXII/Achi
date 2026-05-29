@@ -1,8 +1,8 @@
 //调试日志：系统 | ACHI > 消息
 message = {func, tuple.get(args, 0)}
-playerId = {func, command.get_executor()}
 
 cmd = 'tellraw @a[tag=isDebugMode] {\"rawtext\":[{\"text\":\"§7调试 | ACHI > §f' + message + '\"}]}'
 
-_ = {func, world.SetCommand(cmd, playerId)}
+{command, cmd}
+
 return True

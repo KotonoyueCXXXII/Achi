@@ -26,9 +26,9 @@ rof
 
 // 输出验证结果
 if missingCount > 0:
-  msg = '§e--------------------\\n§f验证结果: §c失败 §7| §f已注册: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§c缺失: §f' + missingMsg + '\\n§e--------------------'
+  msg = '§f验证结果: §c失败 §7| §f已注册函数: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§c缺失: §f' + missingMsg + '\\n§e--------------------'
 else:
-  msg = '§e--------------------\\n§f验证结果: §a全部通过 §7| §f已注册: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§e--------------------'
+  msg = '§f验证结果: §a全部通过 §7| §f已注册函数: §a' + str(foundCount) + '§f/§7' + str(expectedLen) + '\\n§e--------------------'
 fi
 
 cmd = 'tellraw @a {\"rawtext\":[{\"text\":\"' + msg + '\"}]}'

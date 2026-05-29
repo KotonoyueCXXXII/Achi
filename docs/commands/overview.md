@@ -1,174 +1,31 @@
-# 目录
-- [目录](#目录)
-- [指令概览](#指令概览)
-  - [操作菜单（表单）](#操作菜单表单)
-  - [长表单相关](#长表单相关)
-    - [编辑长表单](#编辑长表单)
-    - [编辑长表单中的按钮](#编辑长表单中的按钮)
-  - [编辑长表单或模态表单中的文本元素](#编辑长表单或模态表单中的文本元素)
-  - [信息表单相关](#信息表单相关)
-  - [模态表单相关](#模态表单相关)
-    - [编辑模态表单](#编辑模态表单)
-    - [编辑模态表单中的输入框](#编辑模态表单中的输入框)
-    - [编辑模态表单中的开关](#编辑模态表单中的开关)
-    - [编辑模态表单中的下拉框](#编辑模态表单中的下拉框)
-    - [编辑模态表单中的隐式步进滑块](#编辑模态表单中的隐式步进滑块)
-    - [编辑模态表单中的显式步进滑块](#编辑模态表单中的显式步进滑块)
-  - [自定义函数](#自定义函数)
-  - [服务器事件](#服务器事件)
-  - [代码缓存器](#代码缓存器)
-  - [查询命令方块输出](#查询命令方块输出)
+# 指令速查索引 — Minecraft HPL 表单及系统指令
 
+> 按指令类别分组，每个条目指向对应的 API 参考文档。
 
+## 表单类指令
 
+| 指令组 | 核心操作 | 文档 |
+|---|---|---|
+| `customform` | 创建/列出/删除/展示表单，绑定回调 | [custom_form.md](custom_form.md) |
+| `editlongform` + `editbutton` | 编辑长表单结构及按钮 | [long_form.md](long_form.md) |
+| `editpopupform` | 编辑弹窗（信息表单）标题/内容/按钮 | [popup_form.md](popup_form.md) |
+| `editmodalform` | 编辑模态表单结构 | [modal_form.md](modal_form.md) |
+| `editinput` / `edittoggle` / `editdropdown` / `editslider` / `editstepslider` | 编辑模态表单控件（输入框/开关/下拉/滑块） | [modal_form.md](modal_form.md) |
+| `editlabel` | 编辑长表单或模态表单中的文本元素 | [edit_label.md](edit_label.md) |
 
+## 系统类指令
 
-# 指令概览
-## 操作菜单（表单）
-```mcfunction
-customform add <name: string> long|popup|modal
-customform list [name: string]
-customform oncancel <name: string> <code: string> [onCodeError: string]
-customform onsubmit <name: string> <code: string> [onCodeError: string]
-customform remove <name: string>
-customform save <name: string>
-customform show <executor: target> <position: x y z> <player: target> <name: string>
-customform style <player: target> [speed_40|speed_35|speed_30|speed_25|speed_20|speed_15|speed_10|speed_05|speed_00]
-customform close <player: target>
-```
+| 指令组 | 核心操作 | 文档 |
+|---|---|---|
+| `customfunction` | 注册/调用/删除自定义函数 | [custom_function.md](custom_function.md) |
+| `systemevent` | 监听/销毁/查询服务器事件 | [system_event.md](system_event.md) |
+| `compilecache` | 编译缓存管理 | [compile_cache.md](compile_cache.md) |
+| `commandblockoutput` | 查询命令方块输出 | [command_block_output.md](command_block_output.md) |
 
+## 通用约定
 
-
-## 长表单相关
-### 编辑长表单
-```mcfunction
-editlongform <formName: string> append [button|label|header|divider]
-editlongform <formName: string> content <contentCode: string>
-editlongform <formName: string> insert <index: int> [button|label|header|divider]
-editlongform <formName: string> list
-editlongform <formName: string> pop left|right
-editlongform <formName: string> sub keep|discard <startIndex: int> <endIndex: int>
-editlongform <formName: string> title <titleCode: string>
-```
-
-### 编辑长表单中的按钮
-```mcfunction
-editbutton <formName: string> <index: int> icon [textureCode: string]
-editbutton <formName: string> <index: int> text <textCode: string>
-```
-
-
-
-## 编辑长表单或模态表单中的文本元素
-```mcfunction
-editlabel <formName: string> <index: int> header <headerCode: string>
-editlabel <formName: string> <index: int> label <labelCode: string>
-```
-
-
-
-## 信息表单相关
-```mcfunction
-editpopupform <formName: string> button1 <firstButtonCode: string>
-editpopupform <formName: string> button2 <secondButtonCode: string>
-editpopupform <formName: string> content <contentCode: string>
-editpopupform <formName: string> title <titleCode: string>
-```
-
-
-
-## 模态表单相关
-### 编辑模态表单
-```mcfunction
-editmodalform <formName: string> append label|header|divider|input|toggle|dropdown|slider|stepslider
-editmodalform <formName: string> insert <index: int> label|header|divider|input|toggle|dropdown|slider|stepslider
-editmodalform <formName: string> list
-editmodalform <formName: string> pop left|right
-editmodalform <formName: string> sub keep|discard <startIndex: int> <endIndex: int>
-editmodalform <formName: string> title <titleCode: string>
-```
-
-### 编辑模态表单中的输入框
-```mcfunction
-editinput <formName: string> <index: int> default <defaultCode: string>
-editinput <formName: string> <index: int> placeholder <placeHolderCode: string>
-editinput <formName: string> <index: int> text <textCode: string>
-editinput <formName: string> <index: int> tooltip [tooltipCode: string]
-```
-
-### 编辑模态表单中的开关
-```mcfunction
-edittoggle <formName: string> <index: int> default <stateCode: string>
-edittoggle <formName: string> <index: int> text <textCode: string>
-edittoggle <formName: string> <index: int> tooltip [tooltipCode: string]
-```
-
-### 编辑模态表单中的下拉框
-```mcfunction
-editdropdown <formName: string> <index: int> append <optionCode: string>
-editdropdown <formName: string> <index: int> default <indexCode: string>
-editdropdown <formName: string> <index: int> insert <index: int> <optionCode: string>
-editdropdown <formName: string> <index: int> list
-editdropdown <formName: string> <index: int> pop left|right
-editdropdown <formName: string> <index: int> sub keep|discard <startIndex: int> <endIndex: int>
-editdropdown <formName: string> <index: int> text <textCode: string>
-editdropdown <formName: string> <index: int> tooltip [tooltipCode: string]
-```
-
-### 编辑模态表单中的隐式步进滑块
-```mcfunction
-editslider <formName: string> <index: int> default <defaultCode: string>
-editslider <formName: string> <index: int> min <minCode: string>
-editslider <formName: string> <index: int> max <maxCode: string>
-editslider <formName: string> <index: int> step <stepCode: string>
-editslider <formName: string> <index: int> text <textCode: string>
-editslider <formName: string> <index: int> tooltip [tooltipCode: string]
-```
-
-### 编辑模态表单中的显式步进滑块
-```mcfunction
-editstepslider <formName: string> <index: int> append <stepCode: string>
-editstepslider <formName: string> <index: int> default <indexCode: string>
-editstepslider <formName: string> <index: int> insert <index: int> <stepCode: string>
-editstepslider <formName: string> <index: int> list
-editstepslider <formName: string> <index: int> pop left|right
-editstepslider <formName: string> <index: int> sub keep|discard <startIndex: int> <endIndex: int>
-editstepslider <formName: string> <index: int> text <textCode: string>
-editstepslider <formName: string> <index: int> tooltip [tooltipCode: string]
-```
-
-
-
-## 自定义函数
-```mcfunction
-customfunction add <name: string> <code: string>
-customfunction call <executor: target> <position: x y z> <name: string>
-customfunction list [name: string]
-customfunction remove <name: string>
-```
-
-
-
-## 服务器事件
-```mcfunction
-systemevent destroy <funcName: string>
-systemevent list [eventName: string]
-systemevent listen <eventName: string> <funcName: string> <code: string> [onCodeError: string]
-systemevent query <funcName: string>
-```
-
-
-
-## 代码缓存器
-```mcfunction
-compilecache compile <code: string>
-compilecache query
-compilecache set [size: int]
-```
-
-
-
-## 查询命令方块输出
-```mcfunction
-commandblockoutput <commandBlockPosition: x y z>
-```
+- `<name: string>` — 表单/函数名（全局唯一标识符）
+- `<executor: target>` — 执行者（`@s` / `@p` / 玩家名）
+- `<position: x y z>` — 坐标（如 `~ ~ ~`）
+- `<code: string>` — HPL 代码字符串，用引号包裹
+- 索引参数均从 0 开始计数

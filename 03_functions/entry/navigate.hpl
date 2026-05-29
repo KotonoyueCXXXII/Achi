@@ -1,7 +1,7 @@
 //跳转入口：导航到指定表单
 formName = {func, tuple.get(args, 0)}
-playerId = {func, command.get_executor()}
 
 cmd = 'customform show @s ~ ~ ~ @s ' + formName
-_ = {func, world.SetCommand(cmd, playerId)}
+{command, cmd}
+
 return True

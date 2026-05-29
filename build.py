@@ -97,8 +97,7 @@ def process_init():
         '§e--------------------\\n'
         '§f正在安装 §aACHI §f脚本文件……\\n'
         f'§7编译次序: §f{count}  §7编译时刻: §f{now}\\n'
-        f'§7初始化: §f{init_count}  §7事件: §f{event_count}  §7函数: §f{func_count}  §7表单: §f{form_count}\\n'
-        '§e--------------------'
+        f'§7初始化: §f{init_count}  §7事件: §f{event_count}  §7函数: §f{func_count}  §7表单: §f{form_count}'
     )
     parts.append(f'# Achi 地皮管理系统 - 编译 #{count} @ {now}')
     parts.append(f'systemevent destroy on_command')
